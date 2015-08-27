@@ -1,7 +1,8 @@
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
 // template, and play the video on the page using the YouTube IFrame API.
 //
-// See http://en.wikipedia.org/wiki/Magnetic_card to understand the format of the data on a card.
+// Basic usage:
+//   $("...some link selector...").autotube();
 //
 // Uses pattern at https://github.com/umdjs/umd/blob/master/jqueryPlugin.js to declare
 // the plugin so that it works with or without an AMD-compatible module loader, like RequireJS.
@@ -31,8 +32,39 @@
 	(url.match(youtubeEmbedExpr) != null);
 	};
 
+	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
+	var plugin = function (method) {
+		// Method calling logic. If named method exists, execute it with passed arguments
+		if (methods[method]) {
+			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
+		}
+			// If no argument, or an object passed, invoke init method.
+		else if (typeof method === 'object' || !method) {
+			return methods.init.apply(this, arguments);
+		}
+		else {
+			throw 'Method ' + method + ' does not exist on jQuery.tubist';
+		}
+	};
+
+	// Default options for plugin
+	var defaults = {
+
+	};
+
+	// Callable methods
+	var methods = {
+		init: function (options) {
+			var settings = $.extend({}, defaults, options);
+
+			// ...
+			return settings;
+		}
+
+	};
+
 	// Extracts the YouTube video ID from a link
-	$.youtubeVideoId = function (link) {
+	plugin.videoId = function (link) {
 		var match = link.href.match(youtubeStandardExpr);
 		if (match != null)
 			return match[1];
@@ -46,6 +78,10 @@
 		if (match != null)
 			return match[1];
 	};
+
+
+	// Attach plugin to jQuery object 
+	$.fn.autotube = plugin;
 
 
 }));
