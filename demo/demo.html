@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <title>jQuery.tubist Demo Page</title>
+</head>
+<body>
+	<h1>Demo</h1>
+	<p>Here's a <a href="https://youtu.be/i-VG02EVDM4">cat video</a>!</p>
+	<p>Here's a <a href="https://youtu.be/nGeKSiCQkPw">dog video</a>! And one about <a href="https://youtu.be/kI4yoXyb1_M">a dog that wants a cat</a>.</p>
+	<p>And <a href="https://www.youtube.com/watch?v=84vE-2mSqtc">Norm</a>!</p>
+
+	<!-- Template for video callout created from URL -->
+	<script id="video-callout-template" type="text/x-jsrender">
+		<div class="video-callout">
+			<a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
+				<div class="video-poster" style="background-image: url({{=posterUrl}})" />
+			</a>
+			<p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
+		</div>
+	</script>
+
+
+</body>
+</html>

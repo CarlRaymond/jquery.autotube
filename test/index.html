@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Example</title>
+  <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture">
+		<div class="standard">
+			<p>Standard form, www: <a href="http://www.youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
+			<p>Standard form, no www: <a href="http://youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
+		</div>
+		<div class="alternate">
+			<p>Alternate form, www: <a href="http://www.youtube.com/v/phVdqyThPgc">Kitties!</a></p>
+			<p>Alternate form, no www: <a href="http://youtube.com/v/phVdqyThPgc">Kitties!</a></p>
+		</div>
+		<div class="short">
+			<p>Short form: <a href="http://youtu.be/phVdqyThPgc">Kitties!</a></p>
+		</div>
+		<div class="embed">
+			<p>Embed form, www: <a href="http://www.youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
+			<p>Embed form, no www: <a href="http://youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
+		</div>
+	</div>
+	<script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="../dist/jquery.tubist.js"></script>
+	<script src="tests.js"></script>
+</body>
+</html>
