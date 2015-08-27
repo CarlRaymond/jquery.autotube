@@ -1,5 +1,5 @@
 {
-  "name": "jquery.tubist",
+  "name": "jquery.autotube",
   "version": "1.0.0",
   "description": "jQuery plugin to detect YouTube video links, load thumbnail images, and play the video through the YouTube IFrame API.",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/CarlRaymond/jquery.tubist.git"
+    "url": "https://github.com/CarlRaymond/jquery.autotube.git"
   },
   "keywords": [
     "jquery-plugin",
@@ -19,9 +19,9 @@
   "author": "Carl J. Raymond",
   "license": "GPLv2",
   "bugs": {
-    "url": "https://github.com/CarlRaymond/jquery.tubist/issues"
+    "url": "https://github.com/CarlRaymond/jquery.autotube/issues"
   },
-  "homepage": "https://github.com/CarlRaymond/jquery.tubist",
+  "homepage": "https://github.com/CarlRaymond/jquery.autotube",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",

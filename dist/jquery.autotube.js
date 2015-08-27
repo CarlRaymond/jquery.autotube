@@ -1,5 +1,5 @@
-/*! jquery.tubist - v1.0.0 - 2015-08-27
-* https://github.com/CarlRaymond/jquery.tubist
+/*! jquery.autotube - v1.0.0 - 2015-08-27
+* https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
 // template, and play the video on the page using the YouTube IFrame API.
