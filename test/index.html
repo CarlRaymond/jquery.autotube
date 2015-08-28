@@ -9,32 +9,61 @@
 	<div id="qunit"></div>
 	<div id="qunit-fixture">
 		<div class="standard">
-			<p>Standard form, www: <a href="http://www.youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
-			<p>Standard form, <a href="https://www.youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
-			<p>Standard form, no www: <a href="http://youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
-			<p>Standard form, https, no www: <a href="https://youtube.com/watch?v=phVdqyThPgc">Kitties!</a></p>
+			<p>Standard form</p>
+			<ul>
+				<li><a href="http://www.youtube.com/watch?v=phVdqyThPgc">http://www.youtube.com/watch?v=phVdqyThPgc</a></li>
+				<li><a href="https://www.youtube.com/watch?v=phVdqyThPgc">https://www.youtube.com/watch?v=phVdqyThPgc</a></li>
+				<li><a href="//www.youtube.com/watch?v=phVdqyThPgc">//www.youtube.com/watch?v=phVdqyThPgc</a></li>
+				<li><a href="http://youtube.com/watch?v=phVdqyThPgc">http://youtube.com/watch?v=phVdqyThPgc</a></li>
+				<li><a href="https://youtube.com/watch?v=phVdqyThPgc">https://youtube.com/watch?v=phVdqyThPgc</a></li>
+				<li><a href="//youtube.com/watch?v=phVdqyThPgc">//youtube.com/watch?v=phVdqyThPgc</a></li>
+			</ul>
 		</div>
 		<div class="alternate">
-			<p>Alternate form, www: <a href="http://www.youtube.com/v/phVdqyThPgc">Kitties!</a></p>
-			<p>Alternate form, www: <a href="https://www.youtube.com/v/phVdqyThPgc">Kitties!</a></p>
-
-			<p>Alternate form, no www: <a href="http://youtube.com/v/phVdqyThPgc">Kitties!</a></p>
-			<p>Alternate form, no www: <a href="https://youtube.com/v/phVdqyThPgc">Kitties!</a></p>
+			<p>Alternate form</p>
+			<ul>
+				<li><a href="http://www.youtube.com/v/phVdqyThPgc">http://www.youtube.com/v/phVdqyThPgc</a></li>
+				<li><a href="https://www.youtube.com/v/phVdqyThPgc">https://www.youtube.com/v/phVdqyThPgc</a></li>
+				<li><a href="//www.youtube.com/v/phVdqyThPgc">//www.youtube.com/v/phVdqyThPgc</a></li>
+				<li><a href="http://youtube.com/v/phVdqyThPgc">http://youtube.com/v/phVdqyThPgc</a></li>
+				<li><a href="https://youtube.com/v/phVdqyThPgc">https://youtube.com/v/phVdqyThPgc</a></li>
+				<li><a href="//youtube.com/v/phVdqyThPgc">//youtube.com/v/phVdqyThPgc</a></li>
+			</ul>
 		</div>
 		<div class="short">
-			<p>Short form: <a href="http://youtu.be/phVdqyThPgc">Kitties!</a></p>
-			<p>Short form: <a href="https://youtu.be/phVdqyThPgc">Kitties!</a></p>
+			<p>Short form</p>
+			<ul>
+				<li>Short form: <a href="http://youtu.be/phVdqyThPgc">http://youtu.be/phVdqyThPgc</a></li>
+				<li>Short form: <a href="https://youtu.be/phVdqyThPgc">https://youtu.be/phVdqyThPgc</a></li>
+				<li>Short form: <a href="//youtu.be/phVdqyThPgc">//youtu.be/phVdqyThPgc</a></li>
+			</ul>
 		</div>
 		<div class="embed">
-			<p>Embed form, www: <a href="http://www.youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
-			<p>Embed form, www: <a href="https://www.youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
-			<p>Embed form, no www: <a href="http://youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
-			<p>Embed form, no www: <a href="https://youtube.com/embed/phVdqyThPgc">Kitties!</a></p>
+			<p>Embed form</p>
+			<ul>
+				<li>Embed form, www: <a href="http://www.youtube.com/embed/phVdqyThPgc">http://www.youtube.com/embed/phVdqyThPgc</a></li>
+				<li>Embed form, www: <a href="https://www.youtube.com/embed/phVdqyThPgc">https://www.youtube.com/embed/phVdqyThPgc</a></li>
+				<li>Embed form, www: <a href="//www.youtube.com/embed/phVdqyThPgc">//www.youtube.com/embed/phVdqyThPgc</a></li>
+				<li>Embed form, no www: <a href="http://youtube.com/embed/phVdqyThPgc">http://youtube.com/embed/phVdqyThPgc</a></li>
+				<li>Embed form, no www: <a href="https://youtube.com/embed/phVdqyThPgc">https://youtube.com/embed/phVdqyThPgc</a></li>
+				<li>Embed form, no www: <a href="//youtube.com/embed/phVdqyThPgc">//youtube.com/embed/phVdqyThPgc</a></li>
+			</ul>
 		</div>
 	</div>
 	<script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
 	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="../dist/jquery.tubist.js"></script>
+	<script src="../dist/jquery.autotube.js"></script>
 	<script src="tests.js"></script>
+
+	<!-- Template for video callout created from URL -->
+	<script id="video-callout-template" type="text/x-jsrender">
+		<div class="video-callout">
+			<a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
+				<div class="video-poster" style="background-image: url({{=posterUrl}})" />
+			</a>
+			<p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
+		</div>
+	</script>
+
 </body>
 </html>

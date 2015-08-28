@@ -35,6 +35,13 @@
 	(url.match(youtubeEmbedExpr) != null);
 	};
 
+	// Default options for plugin
+	var defaults = {
+		calloutTemplate: "#video-callout-template",
+		calloutImageFilename: "default.jpg"
+
+	};
+
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
 	var plugin = function (method) {
 		// Method calling logic. If named method exists, execute it with passed arguments
@@ -50,12 +57,7 @@
 		}
 	};
 
-	// Default options for plugin
-	var defaults = {
-
-	};
-
-	// Callable methods
+	// Callable plugin methods
 	var methods = {
 		init: function (options) {
 			var settings = $.extend({}, defaults, options);
@@ -66,25 +68,32 @@
 
 	};
 
-	// Extracts the YouTube video ID from a link
-	plugin.videoId = function (link) {
-		var match = link.href.match(youtubeStandardExpr);
-		if (match != null)
-			return match[1];
-		match = link.href.match(youtubeAlternateExpr);
-		if (match != null)
-			return match[1];
-		match = link.href.match(youtubeShortExpr);
-		if (match != null)
-			return match[1];
-		match = link.href.match(youtubeEmbedExpr);
-		if (match != null)
-			return match[1];
+
+
+	// Utility functions
+	var util = {
+		// Extracts the YouTube video ID from a link
+		videoId: function (link) {
+			var match = link.href.match(youtubeStandardExpr);
+			if (match != null)
+				return match[2];
+			match = link.href.match(youtubeAlternateExpr);
+			if (match != null)
+				return match[2];
+			match = link.href.match(youtubeShortExpr);
+			if (match != null)
+				return match[1];
+			match = link.href.match(youtubeEmbedExpr);
+			if (match != null)
+				return match[2];
+		}
 	};
 
 
-	// Attach plugin to jQuery object 
+	// Attach plugin to jQuery set object 
 	$.fn.autotube = plugin;
 
+	// Attach utilty to jQuery for easier testing
+	$.autotube = util;
 
 }));

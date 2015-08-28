@@ -12,9 +12,9 @@
   },
   "keywords": [
     "jquery-plugin",
-		"ecosystem:jquery",
-		"youtube",
-		"video"
+    "ecosystem:jquery",
+    "youtube",
+    "video"
   ],
   "author": "Carl J. Raymond",
   "license": "GPLv2",
@@ -29,6 +29,7 @@
     "grunt-contrib-connect": "^0.11.2",
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-less": "^1.0.1",
+    "grunt-contrib-qunit": "^0.7.0",
     "grunt-contrib-uglify": "^0.9.2",
     "qunitjs": "^1.18.0"
   }
