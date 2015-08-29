@@ -17,10 +17,10 @@
 }(function ($) {
 
 	// RegExps for YouTube link forms
-	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i;
-	var youtubeAlternateExpr = /^https?:\/\/(www\.)?youtube.com\/v\/([^\/\?]+)/i;
-	var youtubeShortExpr = /^https?:\/\/youtu.be\/([^\/]+)/i;
-	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i;
+	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i; // Group 2 is video ID
+	var youtubeAlternateExpr = /^https?:\/\/(www\.)?youtube.com\/v\/([^\/\?]+)/i; // Group 2 is video ID
+	var youtubeShortExpr = /^https?:\/\/youtu.be\/([^\/]+)/i; // Group 1 is video ID
+	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
 	// Custom selector for YouTube URLs
 	$.expr[':'].youtube = function (obj) {
@@ -32,25 +32,37 @@
 	(url.match(youtubeEmbedExpr) != null);
 	};
 
+	// Default placer to position callout and player in document
+	var calloutCallback = function (info, $link, $callout) {
+		// Place callout at end of link's parent
+		$link.parent().append($callout);
+	};
+
+	var playerCallback = function ($player) {
+		// Place player at end of body
+		$('body').append($player);
+	};
+
 	// Default options for plugin
 	var defaults = {
 		calloutTemplate: "#video-callout-template",
-		calloutImageFilename: "default.jpg"
-
+		calloutImageFilename: "default.jpg",
+		calloutCallback: calloutCallback,
+		playerCallback: playerCallback
 	};
 
-
+	// Plugin method "init"
 	var init = function (options) {
 		var settings = $.extend({}, defaults, options);
 
 		// Compile the callout and player templates
-		var calloutTemplate = $.template("callout", $(options.calloutTemplateId));
-		var playerTemplate = $.template("player", $(options.playerItemplateId));
+		//var calloutTemplate = $.template("callout", $(settings.calloutTemplate));
+		//var playerTemplate = $.template("player", $(settings.playerItemplate));
 
 		// Process each link
 		this.each(function (index) {
 			var $link = $(this);
-			var videoId = util.videoId($link);
+			var videoId = util.videoId(this);
 			var info = {
 				videoId: videoId,
 				posterId: "video-poster-" + index,
@@ -60,26 +72,28 @@
 			};
 
 			// Instantiate the callout template
-			var calloutMarkup = $.render(info, "callout");
+			//var calloutMarkup = $.render(info, "callout");
+
+			var calloutMarkup = $(settings.calloutTemplate).render(info);
 			var $callout = $(calloutMarkup);
 
-			// Instantiate the player dialog
-			var playerMarkup = $.render(info, "player");
-			var $player = $(playerMarkup);
-
-			if (options.callback) {
+			if (settings.placementCallback) {
 				// Invoke callback to place elements and do any necessary hookuping.
-				options.callback($link, $callout, $player, info);
-			}
-			else {
-				// Default treatment. Place callout at end of link's parent, and place player at end of body.
-				$link.parent().append($callout);
-				$('body').append($player);
+				settings.placementCallback(info, $link, $callout, $player);
 			}
 
 		});
 
+		var playerMarkup = $(settings.playerTemplate).render(info);
+		var $player = $(playerMarkup);
+
+
 		return settings;
+	};
+
+	// Plugin method "stop"
+	var stop = function () {
+
 	};
 
 

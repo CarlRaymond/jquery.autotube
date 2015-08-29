@@ -4,6 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <title>jQuery.tubist Demo Page</title>
+
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="jsrender.min.js"></script>
+	<script src="../dist/jquery.autotube.js"></script>
 </head>
 <body>
 	<h1>Demo</h1>
@@ -21,6 +25,21 @@
 		</div>
 	</script>
 
+	<!-- Template for video player -->
+	<script id="video-player-template" type="text/x-jsrender">
+		<div class="video-player">
+			<div id="host">Player goes here</div>
+		</div>
+	</script>
 
+	<script type="text/javascript">
+		$(document).ready(function () {
+			var options = {
+				calloutTemplate: "#video-callout-template",
+				playerTemplate: "#video-player-template"
+			};
+			$("a:youtube").autotube(options);
+		});
+	</script>
 </body>
 </html>

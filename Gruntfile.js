@@ -75,6 +75,7 @@ module.exports = function(grunt) {
     demo: {
  
     }
+
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
