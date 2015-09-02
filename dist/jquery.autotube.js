@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-08-28
+/*! jquery.autotube - v1.0.0 - 2015-09-02
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -99,28 +99,82 @@
 
 	};
 
+	// Extract the YouTube video ID from a link
+	var videoId = function (link) {
+		var match = link.href.match(youtubeStandardExpr);
+		if (match != null)
+			return match[2];
+		match = link.href.match(youtubeAlternateExpr);
+		if (match != null)
+			return match[2];
+		match = link.href.match(youtubeShortExpr);
+		if (match != null)
+			return match[1];
+		match = link.href.match(youtubeEmbedExpr);
+		if (match != null)
+			return match[2];
 
-	// Utility functions
-	var util = {
-		// Extracts the YouTube video ID from a link
-		videoId: function (link) {
-			var match = link.href.match(youtubeStandardExpr);
-			if (match != null)
-				return match[2];
-			match = link.href.match(youtubeAlternateExpr);
-			if (match != null)
-				return match[2];
-			match = link.href.match(youtubeShortExpr);
-			if (match != null)
-				return match[1];
-			match = link.href.match(youtubeEmbedExpr);
-			if (match != null)
-				return match[2];
-		}
 	};
 
+
+	// Very simple template engine adapted from John Resig's Secrets of the
+	// Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
+	// Good luck figuring it out. Call it with the name of a template
+	// to return a compiled rendering function, or call it with the
+	// text of a template and data to render the text.
+	var templateCache = {};
+	var template = function(str, data) {
+
+		// Matches HTML4 compliant id names. HTML5 is more lax,
+		// so lax that it can't be done with a reasonable RE.
+		// So this is fine.
+		var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
+
+		var t;
+		if (idexpr.test(str)) {
+			// Passed id of template. Get from cache.
+			t = templateCache[str];
+			if (t) return t;
+
+			// Get template text from DOM, compile and cache
+			var $text = $("#" + str);
+			if ($text.length === 0)
+				throw('Template not found: "' + str + '"');
+			t = compile($text.html());
+			templateCache[str] = t;
+		}
+		else {
+			// Passed text of template. Compile.
+			t = compile(str);
+		}
+
+		// If data supplied, render the template with the
+		// data; otherwise return the compiled renderer.
+		return data ? t(data) : t;
+	};
+
+	var compile = function(text) {
+		// Passed text of template. Compile a rendering function using
+		// Function constructor and buttload of string replacements
+		return new Function("obj",
+			"var p=[], print=function() { p.push.apply(p, arguments); };" +
+			"with(obj) { p.push('" +
+			text
+				.replace(/[\r\t\n]/g, " ")
+				.split("<%").join("\t")
+				.replace(/((^|%>)[^\t]*)'/g, "$1\r")
+				.replace(/\t=(.*?)%>/g, "',$1,'")
+				.split("\t").join("');")
+				.split("%>").join("p.push('")
+				.split("\r").join("\\'") +
+			"');} return p.join('');");
+	};
+
+
+
+
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
-	var plugin = function (method) {
+	$.fn.autotube = function (method) {
 		// Method calling logic. If named method exists, execute it with passed arguments
 		if (methods[method]) {
 			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
@@ -140,11 +194,9 @@
 	};
 
 
-
-	// Attach plugin to jQuery set object 
-	$.fn.autotube = plugin;
-
-	// Attach utilty to jQuery for easier testing
-	$.autotube = util;
-
+	// Attach internal fuctions to $.autotube for easier testing
+	$.autotube = {
+		videoId: videoId,
+		template: template
+	};
 }));

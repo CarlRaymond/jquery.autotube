@@ -50,10 +50,6 @@
 			</ul>
 		</div>
 	</div>
-	<script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
-	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-	<script src="../dist/jquery.autotube.js"></script>
-	<script src="tests.js"></script>
 
 	<!-- Template for video callout created from URL -->
 	<script id="video-callout-template" type="text/x-jsrender">
@@ -64,6 +60,30 @@
 			<p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
 		</div>
 	</script>
+
+
+	<!-- Template for built-in template parser -->
+	<script id="test-template" type="text/html">
+	<div class="template">
+		<p>The rain in <%=city%> falls mainly in the <%=location%>.</p>
+	</div>
+	</script>
+
+	<!-- Template with hyphen in name -->
+	<script id="hyphenated-name" type="text/html">
+		<p>I am a template!</p>
+	</script>
+
+	<!-- Template that gets cached -->
+	<script id="cached-template" type="text/html">
+	<p>This template should get cached.</p>
+	</script>
+
+
+	<script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
+	<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script src="../dist/jquery.autotube.js"></script>
+	<script src="tests.js"></script>
 
 </body>
 </html>
