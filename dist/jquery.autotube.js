@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-09-02
+/*! jquery.autotube - v1.0.0 - 2015-09-08
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -119,9 +119,9 @@
 
 	// Very simple template engine adapted from John Resig's Secrets of the
 	// Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
-	// Good luck figuring it out. Call it with the name of a template
-	// to return a compiled rendering function, or call it with the
-	// text of a template and data to render the text.
+	// Good luck figuring it out (the original was worse).
+	// Call it with the name of a template to return a compiled rendering
+	// function, or call it with the text of a template and data to render the text.
 	var templateCache = {};
 	var template = function(str, data) {
 
@@ -153,8 +153,9 @@
 		return data ? t(data) : t;
 	};
 
+	// Invoked by template function to compile template text
 	var compile = function(text) {
-		// Passed text of template. Compile a rendering function using
+		// Compile a rendering function using
 		// Function constructor and buttload of string replacements
 		return new Function("obj",
 			"var p=[], print=function() { p.push.apply(p, arguments); };" +

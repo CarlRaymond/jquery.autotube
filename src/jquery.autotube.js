@@ -32,12 +32,32 @@
 	(url.match(youtubeEmbedExpr) != null);
 	};
 
-	// Default placer to position callout and player in document
+
+	// Tracks YouTube API loading
+	var apiLoaded = $.Deferred();
+	var apiRequested = false;
+
+	// When api is ready, it invokes this handler.
+	window.onYouTubeIframeAPIReady = function() {
+		apiLoaded.resolve();
+	}
+
+	// Invoke to load API, then wait on apiLoaded.
+	var loadApi = function() {
+		if (!apiRequested) {
+			apiRequested = true;
+			$.getScript("https://www.youtube.com/iframe_api");
+		}
+	};
+
+
+	// Default placer to position callout in the document
 	var calloutCallback = function (info, $link, $callout) {
 		// Place callout at end of link's parent
 		$link.parent().append($callout);
 	};
 
+	// Default placer to position the player in the document
 	var playerCallback = function ($player) {
 		// Place player at end of body
 		$('body').append($player);
@@ -149,6 +169,7 @@
 		// data; otherwise return the compiled renderer.
 		return data ? t(data) : t;
 	};
+
 
 	// Invoked by template function to compile template text
 	var compile = function(text) {

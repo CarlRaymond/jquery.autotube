@@ -1,8 +1,3 @@
-/*
-QUnit.test("plugin loaded", function (assert) {
-	assert.ok(typeof(jQuery.tubist) === 'function', "Plugin loaded");
-});
-*/
 
 QUnit.test("Selector: standard", function (assert) {
 	var $set = $("#qunit-fixture .standard a:youtube");
