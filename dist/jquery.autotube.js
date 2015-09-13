@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-09-08
+/*! jquery.autotube - v1.0.0 - 2015-09-12
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -25,7 +25,7 @@
 	var youtubeShortExpr = /^https?:\/\/youtu.be\/([^\/]+)/i; // Group 1 is video ID
 	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
-	// Custom selector for YouTube URLs
+	// Custom selector for YouTube URLs. Usage: $("#somediv a:youtube")...
 	$.expr[':'].youtube = function (obj) {
 		var url = obj.href;
 		if (!url) return false;
@@ -35,68 +35,37 @@
 	(url.match(youtubeEmbedExpr) != null);
 	};
 
-	// Default placer to position callout and player in document
+
+	// Tracks YouTube API loading. Resolved when API loaded and ready.
+	var apiLoaded = $.Deferred();
+
+	// True when API has been requested.
+	var apiRequested = false;
+
+	// When YouTube api is ready, it invokes this handler.
+	window.onYouTubeIframeAPIReady = function() {
+		apiLoaded.resolve();
+	};
+
+	// Invoke to load YouTube API, then wait on apiLoaded.
+	var requestApi = function() {
+		if (!apiRequested) {
+			apiRequested = true;
+			$.getScript("https://www.youtube.com/iframe_api");
+		}
+	};
+
+
+	// Default placer to position callout in the document
 	var calloutCallback = function (info, $link, $callout) {
 		// Place callout at end of link's parent
 		$link.parent().append($callout);
 	};
 
+	// Default placer to position the player in the document
 	var playerCallback = function ($player) {
 		// Place player at end of body
 		$('body').append($player);
-	};
-
-	// Default options for plugin
-	var defaults = {
-		calloutTemplate: "#video-callout-template",
-		calloutImageFilename: "default.jpg",
-		calloutCallback: calloutCallback,
-		playerCallback: playerCallback
-	};
-
-	// Plugin method "init"
-	var init = function (options) {
-		var settings = $.extend({}, defaults, options);
-
-		// Compile the callout and player templates
-		//var calloutTemplate = $.template("callout", $(settings.calloutTemplate));
-		//var playerTemplate = $.template("player", $(settings.playerItemplate));
-
-		// Process each link
-		this.each(function (index) {
-			var $link = $(this);
-			var videoId = util.videoId(this);
-			var info = {
-				videoId: videoId,
-				posterId: "video-poster-" + index,
-				playerId: "video-player-" + index,
-				iframeId: "video-iframe-" + index,
-				calloutImageUrl: 'https://img.youtube.com/vi/' + videoId + '/' + settings.calloutImageFilename
-			};
-
-			// Instantiate the callout template
-			//var calloutMarkup = $.render(info, "callout");
-
-			var calloutMarkup = $(settings.calloutTemplate).render(info);
-			var $callout = $(calloutMarkup);
-
-			if (settings.placementCallback) {
-				// Invoke callback to place elements and do any necessary hookuping.
-				settings.placementCallback(info, $link, $callout, $player);
-			}
-
-		});
-
-		var playerMarkup = $(settings.playerTemplate).render(info);
-		var $player = $(playerMarkup);
-
-
-		return settings;
-	};
-
-	// Plugin method "stop"
-	var stop = function () {
-
 	};
 
 	// Extract the YouTube video ID from a link
@@ -116,7 +85,6 @@
 
 	};
 
-
 	// Very simple template engine adapted from John Resig's Secrets of the
 	// Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
 	// Good luck figuring it out (the original was worse).
@@ -129,6 +97,9 @@
 		// so lax that it can't be done with a reasonable RE.
 		// So this is fine.
 		var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
+
+		// Matches a "url", which is anything that starts with a slash
+		var urlexpr = /^\/.*/;
 
 		var t;
 		if (idexpr.test(str)) {
@@ -143,6 +114,9 @@
 			t = compile($text.html());
 			templateCache[str] = t;
 		}
+		else if (urlexpr.test(str)) {
+			// Passed url of template.
+		}
 		else {
 			// Passed text of template. Compile.
 			t = compile(str);
@@ -152,6 +126,7 @@
 		// data; otherwise return the compiled renderer.
 		return data ? t(data) : t;
 	};
+
 
 	// Invoked by template function to compile template text
 	var compile = function(text) {
@@ -171,6 +146,61 @@
 			"');} return p.join('');");
 	};
 
+
+	// Default options for plugin
+	var defaults = {
+		calloutTemplate: "#video-callout-template",
+		calloutImageFilename: "default.jpg",
+		calloutCallback: calloutCallback,
+		playerCallback: playerCallback
+	};
+
+	// Plugin method "init"
+	var init = function (options) {
+		var settings = $.extend({}, defaults, options);
+
+		// Ensure init not already applied to set. Find elements with autotube data on them.
+		// This data combines the settings and info object derived for each link.
+		if (this.filter(function () { return $(this).data('autotube');  }).length !== 0) {
+			$.error('Autotube already applied to a selected element');
+		}
+
+		// Compile the callout and player templates
+		var calloutRenderer = settings.calloutRenderer || template(settings.calloutTemplate);
+
+		// Process each link
+		this.each(function (index) {
+			var $link = $(this);
+			var vid = videoId(this);
+			var info = {
+				videoId: vid,
+				posterId: "video-poster-" + index,
+				playerId: "video-player-" + index,
+				iframeId: "video-iframe-" + index,
+				calloutImageUrl: 'https://img.youtube.com/vi/' + videoId + '/' + settings.calloutImageFilename
+			};
+
+			var calloutMarkup = calloutRenderer(info);
+			var $callout = $(calloutMarkup);
+
+			if (settings.placementCallback) {
+				// Invoke callback to place elements and do any necessary hookuping.
+				settings.placementCallback(info, $link, $callout);
+			}
+
+			// Save info on the link
+			$link.data("autotube", { settings: settings, info: info });
+		});
+
+
+
+		return settings;
+	};
+
+	// Plugin method "stop"
+	var stop = function () {
+
+	};
 
 
 

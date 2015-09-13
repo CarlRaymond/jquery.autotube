@@ -12,7 +12,7 @@
 	window.onYouTubeIframeAPIReady = function() {
 		console.log("API ready");
 		apiLoaded.resolve();
-	}
+	};
 
 	if (!apiRequested) {
 		apiRequested = true;

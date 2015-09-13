@@ -88,3 +88,32 @@ QUnit.test("Template id may contain hyphen", function(assert) {
 });
 
 
+QUnit.test("Init method stores data on elements", function(assert) {
+	var options = { first: 1 };
+
+	var set = $("#qunit-fixture div.standard a:youtube");
+	assert.ok(set.length, "Set not empty");
+ 	set.autotube(options);
+
+ 	set.each(function() {
+ 		var data = $(this).data("autotube");
+ 		assert.ok(data, "Element data contains options");
+ 		assert.equal(data.settings.first, 1, "Property matches");
+ 	});
+
+ 	set.removeData("autotube");
+});
+
+
+QUnit.test("Plugin applied to element more than once throws", function(assert) {
+	var set = $("#qunit-fixture div.standard a:youtube");
+	set.autotube();
+	assert.throws(function() {
+
+		// Apply init to same elements
+		set.autotube();
+	});
+
+	set.removeData("autotube");
+});
+
