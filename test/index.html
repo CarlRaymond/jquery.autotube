@@ -4,6 +4,27 @@
   <meta charset="utf-8">
   <title>QUnit Example</title>
   <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
+
+  <style type="text/css">
+  .video-callout {
+  	margin: 0 10px 10px 0;
+  	padding: 10px;
+  	height: 204px;
+  	width: 270px;
+  	background-color: #fff;
+  	border: 1px solid gray;
+  	box-shadow: 2px 2px 2px black;
+  	border-radius: 4px;
+  	float: right;
+  }
+  .video-poster {
+  	background-repeat: no-repeat;
+  	background-size: 240px 180px;
+  	background-position: 0 -23px;
+  	height: 134px;
+  	margin-bottom: 10px;	
+  }
+  </style>
 </head>
 <body>
 	<div id="qunit"></div>
@@ -49,10 +70,26 @@
 				<li>Embed form, no www: <a href="//youtube.com/embed/phVdqyThPgc">//youtube.com/embed/phVdqyThPgc</a></li>
 			</ul>
 		</div>
+
+		<div id="callout-callback">
+		<h2>Callout Callback</h2>
+		<p>Here's a <a href="https://youtu.be/-21iYoe7cI4">cat video</a>.
+		</div>
+
+	</div>
+
+	<div id="default-callout-placer">
+		<h2>Default Callout Placer</h2>
+		<p id="default-callout-placer-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
+	</div>
+
+	<div id="custom-callout-placer">
+		<h2>Custom Callout Placer</h2>
+		<p id="default-callout-placer-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
 	</div>
 
 	<!-- Template for video callout created from URL -->
-	<script id="video-callout-template" type="text/x-jsrender">
+	<script id="video-callout-template" type="text/html">
 		<div class="video-callout">
 			<a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
 				<div class="video-poster" style="background-image: url({{=posterUrl}})" />
@@ -61,11 +98,17 @@
 		</div>
 	</script>
 
+	<!-- Template for video player -->
+	<script id="video-player-template" type="text/html">
+	<div class="video-player">
+	</div>
+	</script>
+
 
 	<!-- Template for built-in template parser -->
 	<script id="test-template" type="text/html">
 	<div class="template">
-		<p>The rain in <%=city%> falls mainly in the <%=location%>.</p>
+		<p>The rain in {{=city}} falls mainly in the {{=location}}.</p>
 	</div>
 	</script>
 

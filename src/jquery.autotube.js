@@ -54,13 +54,13 @@
 
 
 	// Default placer to position callout in the document
-	var calloutCallback = function (info, $link, $callout) {
+	var defaultCalloutCallback = function (info, $link, $callout) {
 		// Place callout at end of link's parent
 		$link.parent().append($callout);
 	};
 
 	// Default placer to position the player in the document
-	var playerCallback = function ($player) {
+	var defaultPlayerCallback = function ($player) {
 		// Place player at end of body
 		$('body').append($player);
 	};
@@ -134,11 +134,11 @@
 			"with(obj) { p.push('" +
 			text
 				.replace(/[\r\t\n]/g, " ")
-				.split("<%").join("\t")
-				.replace(/((^|%>)[^\t]*)'/g, "$1\r")
-				.replace(/\t=(.*?)%>/g, "',$1,'")
+				.split("{{").join("\t")
+				.replace(/((^|}})[^\t]*)'/g, "$1\r")
+				.replace(/\t=(.*?)}}/g, "',$1,'")
 				.split("\t").join("');")
-				.split("%>").join("p.push('")
+				.split("}}").join("p.push('")
 				.split("\r").join("\\'") +
 			"');} return p.join('');");
 	};
@@ -146,49 +146,50 @@
 
 	// Default options for plugin
 	var defaults = {
-		calloutTemplate: "#video-callout-template",
+		calloutTemplate: "video-callout-template",
+		playerTemplate: "video-player-template",
 		calloutImageFilename: "default.jpg",
-		calloutCallback: calloutCallback,
-		playerCallback: playerCallback
+		calloutCallback: defaultCalloutCallback,
+		playerCallback: defaultPlayerCallback
 	};
 
 	// Plugin method "init"
 	var init = function (options) {
 		var settings = $.extend({}, defaults, options);
 
+		// For each element, init will attach data, consisting of the settings and the per-link info.
 		// Ensure init not already applied to set. Find elements with autotube data on them.
-		// This data combines the settings and info object derived for each link.
 		if (this.filter(function () { return $(this).data('autotube');  }).length !== 0) {
 			$.error('Autotube already applied to a selected element');
 		}
 
-		// Compile the callout and player templates
-		var calloutRenderer = settings.calloutRenderer || template(settings.calloutTemplate);
+		// Compile the callout and player renderers, if not user-supplied
+		settings.calloutRenderer = settings.calloutRenderer || template(settings.calloutTemplate);
+		settings.playerRenderer = settings.playerRenderer || template(settings.playerTemplate);
 
 		// Process each link
 		this.each(function (index) {
 			var $link = $(this);
 			var vid = videoId(this);
+			var title = $link.data("title") || $link.text();
 			var info = {
 				videoId: vid,
 				posterId: "video-poster-" + index,
 				playerId: "video-player-" + index,
 				iframeId: "video-iframe-" + index,
-				calloutImageUrl: 'https://img.youtube.com/vi/' + videoId + '/' + settings.calloutImageFilename
+				posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
+				title: title
 			};
 
-			var calloutMarkup = calloutRenderer(info);
+			var calloutMarkup = settings.calloutRenderer(info);
 			var $callout = $(calloutMarkup);
 
-			if (settings.placementCallback) {
-				// Invoke callback to place elements and do any necessary hookuping.
-				settings.placementCallback(info, $link, $callout);
-			}
+			// Invoke callback to place elements and do any necessary hookuping.
+			settings.calloutCallback(info, $link, $callout);
 
 			// Save info on the link
 			$link.data("autotube", { settings: settings, info: info });
 		});
-
 
 
 		return settings;

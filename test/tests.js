@@ -1,26 +1,31 @@
 
 QUnit.test("Selector: standard", function (assert) {
+	var videoId = "phVdqyThPgc";
 	var $set = $("#qunit-fixture .standard a:youtube");
 	assert.equal($set.length, 6, "Found standard link(s)");
 });
+
 
 QUnit.test("Selector: alternate", function (assert) {
 	var $set = $("#qunit-fixture .alternate a:youtube");
 	assert.equal($set.length, 6, "Found alternate link(s)");
 });
 
+
 QUnit.test("Selector: short", function (assert) {
 	var $set = $("#qunit-fixture .short a:youtube");
 	assert.equal($set.length, 3, "Found short link(s)");
 });
+
 
 QUnit.test("Selector: embed", function (assert) {
 	var $set = $("#qunit-fixture .embed a:youtube");
 	assert.equal($set.length, 6, "Found embed link(s)");
 });
 
+
 QUnit.test("videoId", function (assert) {
-	var $links = $("#qunit-fixture a:youtube");
+	var $links = $(".standard a:youtube, .alternate a:youtube, .short a:youtube, .embed a:youtube");
 	$links.each(function (index) {
 		var id = $.autotube.videoId(this);
 		assert.equal(id, "phVdqyThPgc", this.href);
@@ -35,20 +40,22 @@ QUnit.test("Named template compiles", function (assert) {
 	assert.equal(typeof(template), "function");
 });
 
-QUnit.test("Named template cached", function(assert) {
 
-	var name = "cached-template";
-	var renderer1 = $.autotube.template(name);
+QUnit.test("Template referenced by id is cached", function(assert) {
+
+	var id = "cached-template";
+	var renderer1 = $.autotube.template(id);
 
 	// Mark it
 	renderer1.tag = "x";
 
 	// Get it again,
-	var renderer2 = $.autotube.template(name);
-	assert.equal(renderer2.tag, renderer1.tag, "Cached parser returned on reuse");
+	var renderer2 = $.autotube.template(id);
+	assert.equal(renderer2.tag, "x", "Cached parser returned on reuse");
 });
 
-QUnit.test("Named template renders text", function(assert) {
+
+QUnit.test("Template referenced by id renders text", function(assert) {
 	var template = $.autotube.template("test-template");
 	var data = { city: "Spain", location: "plain"};
 	var result = template(data);
@@ -57,7 +64,7 @@ QUnit.test("Named template renders text", function(assert) {
 
 
 QUnit.test("Literal template compiles", function(assert) {
-	var template = "<p>The <%=speed%> <%=color%> <%=animal%> jumped over the lazy dogs.</p>";
+	var template = "<p>The {{=speed}} {{=color}} {{=animal}} jumped over the lazy dogs.</p>";
 	var renderer = $.autotube.template(template);
 	var data = { speed: "quick", color: "brown", animal: "fox" };
 
@@ -68,9 +75,9 @@ QUnit.test("Literal template compiles", function(assert) {
 });
 
 
-QUnit.test("Bad template name throws exception", function(assert) {
+QUnit.test("Bad template id throws exception", function(assert) {
 	assert.throws(function() {
-		$.autotube.template("badname");
+		$.autotube.template("badid");
 	}, "Exception thrown");
 });
 
@@ -89,7 +96,15 @@ QUnit.test("Template id may contain hyphen", function(assert) {
 
 
 QUnit.test("Init method stores data on elements", function(assert) {
-	var options = { first: 1 };
+	
+	// Null callback to prevent callout getting into DOM
+	var callback = function() {
+
+	};
+
+	var options = {
+		calloutCallback: callback
+	};
 
 	var set = $("#qunit-fixture div.standard a:youtube");
 	assert.ok(set.length, "Set not empty");
@@ -97,15 +112,15 @@ QUnit.test("Init method stores data on elements", function(assert) {
 
  	set.each(function() {
  		var data = $(this).data("autotube");
- 		assert.ok(data, "Element data contains options");
- 		assert.equal(data.settings.first, 1, "Property matches");
+ 		assert.ok(data.settings, "Element data contains settings");
+ 		assert.ok(data.info, "Element data contains info`");
  	});
 
  	set.removeData("autotube");
 });
 
 
-QUnit.test("Plugin applied to element more than once throws", function(assert) {
+QUnit.test("Init applied to element more than once throws", function(assert) {
 	var set = $("#qunit-fixture div.standard a:youtube");
 	set.autotube();
 	assert.throws(function() {
@@ -117,3 +132,49 @@ QUnit.test("Plugin applied to element more than once throws", function(assert) {
 	set.removeData("autotube");
 });
 
+
+QUnit.test("Callout callback invoked for each link", function(assert) {
+
+	var done = assert.async();
+	var videoId = "-21iYoe7cI4";
+
+	// Callout callback
+	var callback = function(info, $link, $callout) {
+		assert.equal(info.videoId, videoId, "Video id matches");
+		done();
+	};
+
+	var set = $("#callout-callback a:youtube");
+	var options = {
+		calloutCallback: callback
+	};
+
+	set.autotube(options);
+
+	set.removeData("autotube");
+});
+
+
+QUnit.test("Default callout placer inserts markup", function(assert) {
+
+	var set = $("#default-callout-placer a:youtube").autotube();
+
+	var markup = $("#default-callout-placer-p div.video-callout");
+	assert.equal(markup.length, 1, "Callout <div> exists");
+});
+
+
+QUnit.test("Custom callout placer invoked", function(assert) {
+
+	var done = assert.async();
+	var placer = function(info, $link, $callout) {
+		assert.ok(info, "Info provided");
+		done();
+	};
+
+	var options = {
+		calloutCallback: placer
+	};
+
+	$("#custom-callout-placer a:youtube").autotube(options);
+});
