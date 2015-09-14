@@ -162,7 +162,7 @@
 
 		// For each element, init will attach data, consisting of the settings and the per-link info.
 		// Ensure init not already applied to set. Find elements with autotube data on them.
-		if (this.filter(function () { return $(this).data('autotube');  }).length !== 0) {
+		if (this.filter(function () { return $(this).data('autotube'); }).length !== 0) {
 			$.error('Autotube already applied to a selected element');
 		}
 
@@ -190,6 +190,13 @@
 			// Invoke callback to place elements and do any necessary hookuping.
 			settings.calloutCallback(info, $link, $callout);
 
+			// Remove href from link
+			$link.attr("href", "#");
+
+			// Add click handler to original link and all links in callout
+			var $openers = $("a[href='#']", $callout).add($link);
+			$openers.on("click.autotube", null, info, showPlayer);
+
 			// Save info on the link
 			$link.data("autotube", { settings: settings, info: info });
 		});
@@ -203,6 +210,10 @@
 
 	};
 
+
+	var showPlayer = function(event) {
+		alert("Showing player for video " + event.data.videoId);
+	};
 
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
