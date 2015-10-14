@@ -1,0 +1,38 @@
+
+
+Init method:
+
+Fetch / compile callout template
+
+When template ready,
+	Apply template to video links
+	Store options / per-link info in each link's data
+
+
+Link Click:
+Request API (deferred); gated by boolean
+
+Fetch (deferred) / compile video's player template
+
+When template ready,
+  Instantiate player template
+
+When API ready,
+	Player-up the template
+  Show player
+
+
+
+Other methods:
+Stop:
+  Stop first player in selection
+
+Start
+  Start / restart first player in selection
+
+Hide
+  Stop and hide first player in selection
+
+Show
+  Show first player in selection
+

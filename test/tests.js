@@ -33,51 +33,63 @@ QUnit.test("videoId", function (assert) {
 });
 
 
+QUnit.test("Template renderer created from id", function(assert) {
+	var def = $.autotube.templateRenderer("test-template");
+	var data = { city: "Spain", location: "plain" };
+	def.done(function(renderer) {
+		var result = renderer(data);
+		assert.ok(result.indexOf("The rain in Spain falls mainly in the plain.") > -1, "Template rendered"); 
+	});
+});
 
-QUnit.test("Named template compiles", function (assert) {
 
-	var template = $.autotube.template("test-template");
-	assert.equal(typeof(template), "function");
+QUnit.test("Template renderer created from url", function(assert) {
+	var def = $.autotube.templateRenderer("/test/template1.html");
+	var data = { speed: "quick", color: "brown", animal: "fox" };
+	var done = assert.async();
+	def.done(function(renderer) {
+		var result = renderer(data);
+		assert.ok(result.indexOf("The quick brown fox jumped") > -1, "Template rendered");
+		done();
+	});
 });
 
 
 QUnit.test("Template referenced by id is cached", function(assert) {
-
 	var id = "cached-template";
-	var renderer1 = $.autotube.template(id);
+	var def1 = $.autotube.templateRenderer(id);
 
-	// Mark it
-	renderer1.tag = "x";
+	// Mark the renderer
+	def1.done(function(renderer1) {
+		renderer1.tag = "x";		
+	});
 
-	// Get it again,
-	var renderer2 = $.autotube.template(id);
-	assert.equal(renderer2.tag, "x", "Cached parser returned on reuse");
-});
-
-
-QUnit.test("Template referenced by id renders text", function(assert) {
-	var template = $.autotube.template("test-template");
-	var data = { city: "Spain", location: "plain"};
-	var result = template(data);
-	assert.ok(result.indexOf("The rain in Spain falls mainly in the plain.") > -1, "Text found");
+	// Get it again, check that it's marked
+	var def2 = $.autotube.templateRenderer(id);
+	def2.done(function(renderer2) {
+		assert.equal(renderer2.tag, "x", "Cached parser returned on reuse");
+	});
 });
 
 
 QUnit.test("Literal template compiles", function(assert) {
-	var template = "<p>The {{=speed}} {{=color}} {{=animal}} jumped over the lazy dogs.</p>";
-	var renderer = $.autotube.template(template);
+	var templateText = "<p>The {{=speed}} {{=color}} {{=animal}} jumped over the lazy dogs.</p>";
+	var def = $.autotube.templateRenderer(templateText);
 	var data = { speed: "quick", color: "brown", animal: "fox" };
+	var text;
 
-	var text = renderer(data);
+	def.done(function(renderer) {
+		text = renderer(data);
+	});
 
-	assert.ok(text.indexOf("The quick brown fox") > -1, text);
+	assert.ok(text.indexOf("The quick brown fox jumped") > -1, text);
 
 });
 
 
 QUnit.test("Bad template id throws exception", function(assert) {
 	assert.throws(function() {
-		$.autotube.template("badid");
+		$.autotube.templateRenderer("badid");
 	}, "Exception thrown");
 });
 
@@ -85,13 +97,19 @@ QUnit.test("Bad template id throws exception", function(assert) {
 QUnit.test("Template id may contain hyphen", function(assert) {
 
 	var id = "hyphenated-name";
-	var renderer = $.autotube.template(id);
+	var def = $.autotube.templateRenderer(id);
+	var done = assert.async();
 
-	assert.equal(typeof(renderer), "function", "Template loaded.");
+	def.done(function(renderer) {
+		// Renderer is a function
+		assert.equal(typeof(renderer), "function", "Template loaded.");
 
-	// Ensure the id was treated as an id, and not a literal template definition
-	var result = renderer({});
-	assert.notEqual(result, id, "Argument not a literal template definition");
+		// Ensure the id was treated as an id, and not a literal template definition
+		var result = renderer({});
+		assert.notEqual(result, id, "Argument not a literal template definition");
+
+		done();
+	});
 });
 
 

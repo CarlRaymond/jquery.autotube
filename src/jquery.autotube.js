@@ -27,9 +27,9 @@
 		var url = obj.href;
 		if (!url) return false;
 		return (url.match(youtubeStandardExpr) != null) ||
-	(url.match(youtubeAlternateExpr) != null) ||
-	(url.match(youtubeShortExpr) != null) ||
-	(url.match(youtubeEmbedExpr) != null);
+			(url.match(youtubeAlternateExpr) != null) ||
+			(url.match(youtubeShortExpr) != null) ||
+			(url.match(youtubeEmbedExpr) != null);
 	};
 
 
@@ -82,50 +82,20 @@
 
 	};
 
+	// Matches HTML4 compliant id names. HTML5 is more lax,
+	// so lax that it can't be done with a reasonable RE.
+	// So this is fine.
+	var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
+
+	// Matches a "url", which is anything that starts with a slash
+	var urlexpr = /^\/.*/;
+
 	// Very simple template engine adapted from John Resig's Secrets of the
 	// Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
 	// Good luck figuring it out (the original was worse).
-	// Call it with the name of a template to return a compiled rendering
-	// function, or call it with the text of a template and data to render the text.
 	var templateCache = {};
-	var template = function(str, data) {
 
-		// Matches HTML4 compliant id names. HTML5 is more lax,
-		// so lax that it can't be done with a reasonable RE.
-		// So this is fine.
-		var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
-
-		// Matches a "url", which is anything that starts with a slash
-		var urlexpr = /^\/.*/;
-
-		var t;
-		if (idexpr.test(str)) {
-			// Passed id of template. Get from cache.
-			t = templateCache[str];
-			if (t) return t;
-
-			// Get template text from DOM, compile and cache
-			var $text = $("#" + str);
-			if ($text.length === 0)
-				throw('Template not found: "' + str + '"');
-			t = compile($text.html());
-			templateCache[str] = t;
-		}
-		else if (urlexpr.test(str)) {
-			// Passed url of template.
-		}
-		else {
-			// Passed text of template. Compile.
-			t = compile(str);
-		}
-
-		// If data supplied, render the template with the
-		// data; otherwise return the compiled renderer.
-		return data ? t(data) : t;
-	};
-
-
-	// Invoked by template function to compile template text
+	// Invoked to compile template text into a function
 	var compile = function(text) {
 		// Compile a rendering function using
 		// Function constructor and buttload of string replacements
@@ -143,6 +113,47 @@
 			"');} return p.join('');");
 	};
 
+	// Returns a deferred that resolves to a template renderer function. Execute the function
+	// with a data object to render the template.
+	// The specifier can be the id of a script tag containing the template, or a url
+	// to fetch the template from, or the template text itself.
+	var templateRenderer = function(spec) {
+		var def = $.Deferred();
+		var renderer;
+
+		// Template already cached?
+		if (templateCache[spec]) {
+			def.resolve(templateCache[spec]);
+			return def;
+		}
+
+		// If id passed, get template from DOM
+		if (idexpr.test(spec)) {
+			var $specNode = $("#" + spec);
+			if ($specNode.length === 0)
+				throw('Template not found: "' + spec + '"');
+			renderer = compile($specNode.html());
+			templateCache[spec] = renderer;
+			def.resolve(renderer);
+			return def;			
+		}
+
+		// If url passed, load template AJAXically.
+		if (urlexpr.test(spec)) {
+			var req = $.ajax(spec);
+			var compiled = req.then(function(data) {
+				renderer = compile(data);
+				templateCache[spec] = renderer;
+				return renderer;
+			});
+
+			return compiled;
+		}
+
+		// Otherwise, spec is raw template text. Compile, but don't cache.
+		renderer = compile(spec);
+		return def.resolve(renderer);
+	};
 
 	// Default options for plugin
 	var defaults = {
@@ -163,41 +174,49 @@
 			$.error('Autotube already applied to a selected element');
 		}
 
-		// Compile the callout and player renderers, if not user-supplied
-		settings.calloutRenderer = settings.calloutRenderer || template(settings.calloutTemplate);
-		settings.playerRenderer = settings.playerRenderer || template(settings.playerTemplate);
+		var defRenderer;
+		// User-supplied callout renderer?
+		if (settings.calloutRender) {
+			defRenderer = $.Deferred().resolve(settings.calloutRenderer);
+		}
+		else {
+			// Compile the callout template renderer
+			defRenderer = templateRenderer(settings.calloutTemplate);
+		}
 
-		// Process each link
-		this.each(function (index) {
-			var $link = $(this);
-			var vid = videoId(this);
-			var title = $link.data("title") || $link.text();
-			var info = {
-				videoId: vid,
-				posterId: "video-poster-" + index,
-				playerId: "video-player-" + index,
-				iframeId: "video-iframe-" + index,
-				posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
-				title: title
-			};
+		var set = this;
+		defRenderer.done(function(renderer) {
+			// Process each link
+			set.each(function (index) {
+				var $link = $(this);
+				var vid = videoId(this);
+				var title = $link.data("title") || $link.text();
+				var info = {
+					videoId: vid,
+					posterId: "video-poster-" + index,
+					playerId: "video-player-" + index,
+					iframeId: "video-iframe-" + index,
+					posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
+					title: title
+				};
 
-			var calloutMarkup = settings.calloutRenderer(info);
-			var $callout = $(calloutMarkup);
+				var calloutMarkup = settings.renderer(info);
+				var $callout = $(calloutMarkup);
 
-			// Invoke callback to place elements and do any necessary hookuping.
-			settings.calloutCallback(info, $link, $callout);
+				// Invoke callback to place elements and do any necessary hookuping.
+				settings.calloutCallback(info, $link, $callout);
 
-			// Remove href from link
-			$link.attr("href", "#");
+				// Remove href from link
+				$link.attr("href", "#");
 
-			// Add click handler to original link and all links in callout
-			var $openers = $("a[href='#']", $callout).add($link);
-			$openers.on("click.autotube", null, info, showPlayer);
+				// Add click handler to original link and all links in callout
+				var $openers = $("a[href='#']", $callout).add($link);
+				$openers.on("click.autotube", null, info, showPlayer);
 
-			// Save info on the link
-			$link.data("autotube", { settings: settings, info: info });
+				// Save info on the link
+				$link.data("autotube", { settings: settings, info: info });
+			});
 		});
-
 
 		return settings;
 	};
@@ -209,7 +228,10 @@
 
 
 	var showPlayer = function(event) {
+
 		alert("Showing player for video " + event.data.videoId);
+
+		var templateReady = $.Deferred();
 	};
 
 
@@ -237,6 +259,6 @@
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
 		videoId: videoId,
-		template: template
+		templateRenderer: templateRenderer
 	};
 }));
