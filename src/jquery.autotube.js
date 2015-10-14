@@ -200,7 +200,7 @@
 					title: title
 				};
 
-				var calloutMarkup = settings.renderer(info);
+				var calloutMarkup = renderer(info);
 				var $callout = $(calloutMarkup);
 
 				// Invoke callback to place elements and do any necessary hookuping.
