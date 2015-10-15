@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Example</title>
+  <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
+
+  <style type="text/css">
+  .video-callout {
+  	margin: 0 10px 10px 0;
+  	padding: 10px;
+  	height: 204px;
+  	width: 270px;
+  	background-color: #fff;
+  	border: 1px solid gray;
+  	box-shadow: 2px 2px 2px black;
+  	border-radius: 4px;
+  	float: right;
+  }
+  .video-poster {
+  	background-repeat: no-repeat;
+  	background-size: 240px 180px;
+  	background-position: 0 -23px;
+  	height: 134px;
+  	margin-bottom: 10px;	
+  }
+  </style>
+</head>
+<body>
+	<div id="qunit"></div>
+	<div id="qunit-fixture">
+
+  </div>
+  <p>This is a web page, blah, blah, blah.</p>
+  <p>Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
+
+  <!-- Template for video callout created from URL -->
+  <script id="video-callout-template" type="text/html">
+    <div class="video-callout">
+      <a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
+        <div class="video-poster" style="background-image: url({{=posterUrl}})" />
+      </a>
+      <p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
+    </div>
+  </script>
+
+  <!-- Template for video player -->
+  <script id="video-player-template" type="text/html">
+  <h3>{{=title}}</h3>
+  <div id="{{=playerId}}" class="video-player"></div>
+  <p>The video should be above this text.</p>
+  </script>
+
+  <script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="../dist/jquery.autotube.js"></script>
+  <script src="playertests.js"></script>
+
+</body>
+</html>

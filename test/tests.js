@@ -164,12 +164,38 @@ QUnit.test("Callout callback invoked for each link", function(assert) {
 
 	var set = $("#callout-callback a:youtube");
 	var options = {
-		calloutCallback: callback
+		calloutCallback: callback 	
 	};
 
 	set.autotube(options);
 
 	set.removeData("autotube");
+});
+
+
+QUnit.test("Custom callout renderer invoked", function(assert) {
+
+	// Callout callback
+	var callbackDone = assert.async();
+	var callback = function(info, $link, $callout) {
+		// Verify template renderer invoked
+		assert.ok($callout.html().indexOf("I'm a callout for") > -1, "Custom template used");
+		callbackDone();
+	};
+
+	// Callout template renderer callback
+	var rendererDone = assert.async();
+	var renderer = function(info) {
+		assert.ok(true, "Custom template renderer invoked");
+		rendererDone();
+		return "<div>I'm a callout for " + info.videoId + "!</div>";
+	};
+
+	var options = { 
+		calloutCallback: callback,
+		calloutRenderer: renderer
+	};
+	var set = $("#custom-callout-renderer a:youtube").autotube(options);
 });
 
 
@@ -195,4 +221,13 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 	};
 
 	$("#custom-callout-placer a:youtube").autotube(options);
+});
+
+
+QUnit.test("Callout link click creates player", function(assert) {
+	var options = {
+		
+	};
+	
+	var set = $("#callout-link-click a:youtube").autotube();
 });

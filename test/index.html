@@ -88,6 +88,16 @@
 		<p id="default-callout-placer-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
 	</div>
 
+	<div id="custom-callout-renderer">
+		<h2>Custom Callout Renderer</h2>
+		<p id="default-callout-renderer-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
+	</div>
+
+	<div id="callout-link-click">
+	<h2>Callout Link Click</h2>
+		<p id="callout-link-click-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
+	</div>
+
 	<!-- Template for video callout created from URL -->
 	<script id="video-callout-template" type="text/html">
 		<div class="video-callout">
@@ -100,8 +110,9 @@
 
 	<!-- Template for video player -->
 	<script id="video-player-template" type="text/html">
-	<div class="video-player">
-	</div>
+	<h3>{{=title}}</h3>
+	<div id="{{=playerId}}" class="video-player"></div>
+	<p>The video should be above this text.</p>
 	</script>
 
 

@@ -59,6 +59,14 @@ module.exports = function(grunt) {
  	       	open: 'http://localhost:9001/test/index.html'
     		}
     	},
+
+      player: {
+        options: {
+          port: 9001,
+          keepalive: true,
+          open: 'http://localhost:9001/test/player.html'
+        }
+      }
     },
 
     less: {
@@ -90,4 +98,5 @@ module.exports = function(grunt) {
   grunt.registerTask('build', ['jshint', 'clean', 'concat', 'uglify', 'less']);
   grunt.registerTask('demo', ['build', 'connect:demo']);
   grunt.registerTask('test', ['build', 'connect:test']);
+  grunt.registerTask('player', ['build', 'connect:player']);
 };

@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-10-14
+/*! jquery.autotube - v1.0.0 - 2015-10-15
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -143,9 +143,9 @@
 
 		// If url passed, load template AJAXically.
 		if (urlexpr.test(spec)) {
-			var req = $.ajax(spec);
-			var compiled = req.then(function(data) {
-				renderer = compile(data);
+			var req = $.ajax(spec, { dataType: "html"});
+			var compiled = req.then(function(text) {
+				renderer = compile(text);
 				templateCache[spec] = renderer;
 				return renderer;
 			});
@@ -179,7 +179,7 @@
 
 		var defRenderer;
 		// User-supplied callout renderer?
-		if (settings.calloutRender) {
+		if (settings.calloutRenderer) {
 			defRenderer = $.Deferred().resolve(settings.calloutRenderer);
 		}
 		else {
@@ -194,30 +194,34 @@
 				var $link = $(this);
 				var vid = videoId(this);
 				var title = $link.data("title") || $link.text();
-				var info = {
+
+				// Create per-link info object to attach to the link, merging in the settings
+				// the plugin was invoked with.
+				var info = $.extend({
 					videoId: vid,
 					posterId: "video-poster-" + index,
 					playerId: "video-player-" + index,
 					iframeId: "video-iframe-" + index,
 					posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
 					title: title
-				};
+				}, settings);
 
 				var calloutMarkup = renderer(info);
 				var $callout = $(calloutMarkup);
-
-				// Invoke callback to place elements and do any necessary hookuping.
-				settings.calloutCallback(info, $link, $callout);
 
 				// Remove href from link
 				$link.attr("href", "#");
 
 				// Add click handler to original link and all links in callout
 				var $openers = $("a[href='#']", $callout).add($link);
-				$openers.on("click.autotube", null, info, showPlayer);
+				$openers.on("click.autotube", null, info, preparePlayer);
 
 				// Save info on the link
 				$link.data("autotube", { settings: settings, info: info });
+
+				// Invoke callback to place elements and do any necessary hookuping.
+				settings.calloutCallback(info, $link, $callout);
+
 			});
 		});
 
@@ -229,13 +233,45 @@
 
 	};
 
+	// Invoked when an opener link in the callout is clicked
+	var preparePlayer = function(event) {
 
-	var showPlayer = function(event) {
+		var info = event.data;
 
-		alert("Showing player for video " + event.data.videoId);
+		// Player already instantiated?
+		// ...
 
-		var templateReady = $.Deferred();
+		requestApi();
+
+		// Render the player
+		var defRenderer;
+		// User-supplied callout renderer?
+		if (info.playerRenderer) {
+			defRenderer = $.Deferred().resolve(info.playerRenderer);
+		}
+		else {
+			// Compile the callout template renderer
+			defRenderer = templateRenderer(info.playerTemplate);
+		}
+
+		// When renderer and YouTube API are ready...
+		$.when(defRenderer, apiLoaded).then(function (renderer) {
+			var playerMarkup = renderer(info);
+			var $player = $(playerMarkup);
+
+			// Attach YouTube to player
+			var ytplayer = new YT.Player(info.playerId, {
+				height: '360',
+				width: '640',
+				videoId: info.videoId
+			});
+
+			// Invoke callback to place player
+			info.playerCallback(info, $player); 
+		});
+
 	};
+
 
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
