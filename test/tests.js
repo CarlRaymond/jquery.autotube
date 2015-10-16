@@ -3,6 +3,8 @@ QUnit.test("Selector: standard", function (assert) {
 	var videoId = "phVdqyThPgc";
 	var $set = $("#qunit-fixture .standard a:youtube");
 	assert.equal($set.length, 6, "Found standard link(s)");
+
+	
 });
 
 
@@ -226,8 +228,8 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 
 QUnit.test("Callout link click creates player", function(assert) {
 	var options = {
-		
+
 	};
-	
+
 	var set = $("#callout-link-click a:youtube").autotube();
 });

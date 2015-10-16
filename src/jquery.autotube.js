@@ -236,7 +236,8 @@
 		var info = event.data;
 
 		// Player already instantiated?
-		// ...
+		// TODO ...
+
 
 		requestApi();
 
@@ -256,15 +257,19 @@
 			var playerMarkup = renderer(info);
 			var $player = $(playerMarkup);
 
-			// Attach YouTube to player
-			var ytplayer = new YT.Player(info.playerId, {
+			// Player markup not yet inserted into DOM. Find the element to
+			// instantiate the player on.
+			var elem = $player.find("#" + info.playerId)[0];
+
+			// Instantiate YouTube player
+			var ytplayer = new YT.Player(elem, {
 				height: '360',
 				width: '640',
 				videoId: info.videoId
 			});
 
 			// Invoke callback to place player
-			info.playerCallback(info, $player); 
+			info.playerCallback(info, $player, ytplayer); 
 		});
 
 	};

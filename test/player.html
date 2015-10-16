@@ -24,6 +24,14 @@
   	height: 134px;
   	margin-bottom: 10px;	
   }
+
+  .video-player {
+    border: 1px solid black;
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    clear: both;
+  }
   </style>
 </head>
 <body>
@@ -37,7 +45,7 @@
   <!-- Template for video callout created from URL -->
   <script id="video-callout-template" type="text/html">
     <div class="video-callout">
-      <a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
+      <a href="#" role="button">
         <div class="video-poster" style="background-image: url({{=posterUrl}})" />
       </a>
       <p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
@@ -46,9 +54,12 @@
 
   <!-- Template for video player -->
   <script id="video-player-template" type="text/html">
-  <h3>{{=title}}</h3>
-  <div id="{{=playerId}}" class="video-player"></div>
-  <p>The video should be above this text.</p>
+  <div class="video-player">
+    <h3>{{=title}}</h3>
+    <div id="{{=playerId}}" class="video-player"></div>
+    <p>The video should be above this text.</p>
+    <button>Close</button>
+  </div>
   </script>
 
   <script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>

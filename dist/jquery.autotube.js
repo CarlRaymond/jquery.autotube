@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-10-15
+/*! jquery.autotube - v1.0.0 - 2015-10-16
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -239,7 +239,8 @@
 		var info = event.data;
 
 		// Player already instantiated?
-		// ...
+		// TODO ...
+
 
 		requestApi();
 
@@ -259,15 +260,19 @@
 			var playerMarkup = renderer(info);
 			var $player = $(playerMarkup);
 
-			// Attach YouTube to player
-			var ytplayer = new YT.Player(info.playerId, {
+			// Player markup not yet inserted into DOM. Find the element to
+			// instantiate the player on.
+			var elem = $player.find("#" + info.playerId)[0];
+
+			// Instantiate YouTube player
+			var ytplayer = new YT.Player(elem, {
 				height: '360',
 				width: '640',
 				videoId: info.videoId
 			});
 
 			// Invoke callback to place player
-			info.playerCallback(info, $player); 
+			info.playerCallback(info, $player, ytplayer); 
 		});
 
 	};
