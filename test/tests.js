@@ -4,7 +4,7 @@ QUnit.test("Selector: standard", function (assert) {
 	var $set = $("#qunit-fixture .standard a:youtube");
 	assert.equal($set.length, 6, "Found standard link(s)");
 
-	
+
 });
 
 
@@ -45,6 +45,33 @@ QUnit.test("Template renderer created from id", function(assert) {
 });
 
 
+QUnit.test("Template referenced by id is cached", function(assert) {
+	var id = "cached-template";
+	var def1 = $.autotube.templateRenderer(id);
+	var testDone = assert.async();
+
+	// Mark the renderer
+	def1.done(function(renderer1) {
+		renderer1.tag = "x";		
+
+		// Get it again, check that it's marked
+		var def2 = $.autotube.templateRenderer(id);
+		def2.done(function(renderer2) {
+			assert.equal(renderer2.tag, "x", "Cached renderer returned on reuse");
+
+			testDone();
+		});
+	});
+});
+
+
+QUnit.test("Bad template id throws exception", function(assert) {
+	assert.throws(function() {
+		$.autotube.templateRenderer("badid");
+	}, "Exception thrown");
+});
+
+
 QUnit.test("Template renderer created from url", function(assert) {
 	var def = $.autotube.templateRenderer("/test/template1.html");
 	var data = { speed: "quick", color: "brown", animal: "fox" };
@@ -57,19 +84,21 @@ QUnit.test("Template renderer created from url", function(assert) {
 });
 
 
-QUnit.test("Template referenced by id is cached", function(assert) {
-	var id = "cached-template";
-	var def1 = $.autotube.templateRenderer(id);
+QUnit.test("Template referenced by url is cached", function(assert) {
+	var url = "/test/callout-template.html";
+	var def1 = $.autotube.templateRenderer(url);
+	var testDone = assert.async();
 
 	// Mark the renderer
-	def1.done(function(renderer1) {
-		renderer1.tag = "x";		
-	});
+	def1.done(function(r1) {
+		r1.tag = "z";
 
-	// Get it again, check that it's marked
-	var def2 = $.autotube.templateRenderer(id);
-	def2.done(function(renderer2) {
-		assert.equal(renderer2.tag, "x", "Cached parser returned on reuse");
+		// Get it again, check that it's marked
+		var def2 = $.autotube.templateRenderer(url);
+		def2.done(function(r2) {
+			assert.equal(r2.tag, "z", "Cached renderer returned on reuse");
+			testDone();
+		});
 	});
 });
 
@@ -80,19 +109,12 @@ QUnit.test("Literal template compiles", function(assert) {
 	var data = { speed: "quick", color: "brown", animal: "fox" };
 	var text;
 
-	def.done(function(renderer) {
-		text = renderer(data);
+	def.done(function(render) {
+		text = render(data);
 	});
 
 	assert.ok(text.indexOf("The quick brown fox jumped") > -1, text);
 
-});
-
-
-QUnit.test("Bad template id throws exception", function(assert) {
-	assert.throws(function() {
-		$.autotube.templateRenderer("badid");
-	}, "Exception thrown");
 });
 
 
@@ -133,7 +155,6 @@ QUnit.test("Init method stores data on elements", function(assert) {
  	set.each(function() {
  		var data = $(this).data("autotube");
  		assert.ok(data.settings, "Element data contains settings");
- 		assert.ok(data.info, "Element data contains info`");
  	});
 
  	set.removeData("autotube");
@@ -225,11 +246,3 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 	$("#custom-callout-placer a:youtube").autotube(options);
 });
 
-
-QUnit.test("Callout link click creates player", function(assert) {
-	var options = {
-
-	};
-
-	var set = $("#callout-link-click a:youtube").autotube();
-});

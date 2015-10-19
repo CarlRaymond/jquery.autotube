@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Sample page with callout and player templates internal to the file, in script blocks. -->
 <html>
 <head>
   <meta charset="utf-8">
@@ -29,7 +30,6 @@
     border: 1px solid black;
     padding: 10px;
     border-radius: 4px;
-    width: 100%;
     clear: both;
   }
   </style>
@@ -39,6 +39,8 @@
 	<div id="qunit-fixture">
 
   </div>
+
+  <h1>External Templates</h1>
   <p>This is a web page, blah, blah, blah.</p>
   <p>Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
 
@@ -56,16 +58,49 @@
   <script id="video-player-template" type="text/html">
   <div class="video-player">
     <h3>{{=title}}</h3>
-    <div id="{{=playerId}}" class="video-player"></div>
+    <div id="{{=iframeId}}"></div>
     <p>The video should be above this text.</p>
-    <button>Close</button>
+    <button class="video-close">Close</button>
   </div>
   </script>
 
   <script src="//code.jquery.com/qunit/qunit-1.18.0.js"></script>
   <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
   <script src="../dist/jquery.autotube.js"></script>
-  <script src="playertests.js"></script>
+  <script>
+QUnit.test("Player callback invoked", function(assert) {
+  var done = assert.async();
+
+  var calloutCallback = function(info, $link, $callout) {
+    assert.ok(true, "Callout callback invoked.");
+
+    // Insert the callout
+    $link.parent().append($callout);
+
+    // Simulate clicking the callout
+    setTimeout(function() {
+      $link.click();
+    });
+  };
+
+  var playerCallback = function(info, $player) {
+    assert.ok(true, "Player callback invoked");
+
+    // Insert player into document
+    $("body").append($player);
+
+    done();
+  };
+
+  var options = {
+    calloutCallback: calloutCallback,
+    playerCallback: playerCallback
+  };
+
+  $("a:youtube").autotube(options);
+
+});
+  </script>
 
 </body>
 </html>

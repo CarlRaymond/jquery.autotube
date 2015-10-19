@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2015-10-16
+/*! jquery.autotube - v1.0.0 - 2015-10-19
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2015 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -134,7 +134,7 @@
 		if (idexpr.test(spec)) {
 			var $specNode = $("#" + spec);
 			if ($specNode.length === 0)
-				throw('Template not found: "' + spec + '"');
+				throw('Template not found: "' + spec + '". Use the "calloutTemplate" option with the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
 			renderer = compile($specNode.html());
 			templateCache[spec] = renderer;
 			def.resolve(renderer);
@@ -150,10 +150,17 @@
 				return renderer;
 			});
 
+			req.fail(function (jqXHR, textStatus, errorThrown ) {
+				// Can't throw here (who would catch it?)
+				if (window.console) {
+					console.log('Error fetching template "' + spec + '": ' + errorThrown); 
+				}
+			});
+
 			return compiled;
 		}
 
-		// Otherwise, spec is raw template text. Compile, but don't cache.
+		// Otherwise, spec is raw template text. Compile into a renderer, but don't cache.
 		renderer = compile(spec);
 		return def.resolve(renderer);
 	};
@@ -164,7 +171,9 @@
 		playerTemplate: "video-player-template",
 		calloutImageFilename: "default.jpg",
 		calloutCallback: defaultCalloutCallback,
-		playerCallback: defaultPlayerCallback
+		playerCallback: defaultPlayerCallback,
+		width: 640,
+		height: 360
 	};
 
 	// Plugin method "init"
@@ -188,25 +197,26 @@
 		}
 
 		var set = this;
-		defRenderer.done(function(renderer) {
+		defRenderer.done(function(render) {
 			// Process each link
 			set.each(function (index) {
 				var $link = $(this);
 				var vid = videoId(this);
 				var title = $link.data("title") || $link.text();
 
-				// Create per-link info object to attach to the link, merging in the settings
-				// the plugin was invoked with.
-				var info = $.extend({
+				// Create per-link info object to attach to the link
+				var info = {
+					settings: settings,
 					videoId: vid,
 					posterId: "video-poster-" + index,
 					playerId: "video-player-" + index,
 					iframeId: "video-iframe-" + index,
 					posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
 					title: title
-				}, settings);
+				};
 
-				var calloutMarkup = renderer(info);
+				// Render the callout
+				var calloutMarkup = render(info);
 				var $callout = $(calloutMarkup);
 
 				// Remove href from link
@@ -217,7 +227,7 @@
 				$openers.on("click.autotube", null, info, preparePlayer);
 
 				// Save info on the link
-				$link.data("autotube", { settings: settings, info: info });
+				$link.data("autotube", info);
 
 				// Invoke callback to place elements and do any necessary hookuping.
 				settings.calloutCallback(info, $link, $callout);
@@ -237,6 +247,7 @@
 	var preparePlayer = function(event) {
 
 		var info = event.data;
+		var settings = info.settings;
 
 		// Player already instantiated?
 		// TODO ...
@@ -248,35 +259,33 @@
 		var defRenderer;
 		// User-supplied callout renderer?
 		if (info.playerRenderer) {
-			defRenderer = $.Deferred().resolve(info.playerRenderer);
+			defRenderer = $.Deferred().resolve(info.settings.playerRenderer);
 		}
 		else {
 			// Compile the callout template renderer
-			defRenderer = templateRenderer(info.playerTemplate);
+			defRenderer = templateRenderer(info.settings.playerTemplate);
 		}
 
 		// When renderer and YouTube API are ready...
-		$.when(defRenderer, apiLoaded).then(function (renderer) {
-			var playerMarkup = renderer(info);
+		$.when(defRenderer, apiLoaded).then(function (render) {
+			var playerMarkup = render(info);
 			var $player = $(playerMarkup);
 
-			// Player markup not yet inserted into DOM. Find the element to
-			// instantiate the player on.
-			var elem = $player.find("#" + info.playerId)[0];
+			// Player markup not yet inserted into DOM, so an ordinary selector won't fine it.
+			var elem = $player.find("#" + info.iframeId)[0];
 
 			// Instantiate YouTube player
 			var ytplayer = new YT.Player(elem, {
-				height: '360',
-				width: '640',
+				height: settings.height,
+				width: settings.width,
 				videoId: info.videoId
 			});
 
 			// Invoke callback to place player
-			info.playerCallback(info, $player, ytplayer); 
+			info.settings.playerCallback(info, $player, ytplayer); 
 		});
 
 	};
-
 
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
@@ -293,6 +302,7 @@
 			throw 'Method ' + method + ' does not exist on jQuery.autotube';
 		}
 	};
+
 
 	// Callable plugin methods
 	var methods = {

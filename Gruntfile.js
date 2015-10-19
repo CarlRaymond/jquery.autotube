@@ -56,15 +56,23 @@ module.exports = function(grunt) {
     		options: {
     			port: 9001,
     			keepalive: true,
- 	       	open: 'http://localhost:9001/test/index.html'
+ 	       	open: 'http://localhost:9001/test/tests.html'
     		}
     	},
 
-      player: {
+      internal: {
         options: {
           port: 9001,
           keepalive: true,
-          open: 'http://localhost:9001/test/player.html'
+          open: 'http://localhost:9001/test/internal.html'
+        }
+      },
+
+      external: {
+        options: {
+          port: 9001,
+          keepalive: true,
+          open: 'http://localhost:9001/test/external.html'
         }
       }
     },
@@ -98,5 +106,6 @@ module.exports = function(grunt) {
   grunt.registerTask('build', ['jshint', 'clean', 'concat', 'uglify', 'less']);
   grunt.registerTask('demo', ['build', 'connect:demo']);
   grunt.registerTask('test', ['build', 'connect:test']);
-  grunt.registerTask('player', ['build', 'connect:player']);
+  grunt.registerTask('internal', ['build', 'connect:internal']);
+  grunt.registerTask('external', ['build', 'connect:external']);
 };
