@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-02-17
+/*! jquery.autotube - v1.0.0 - 2016-02-18
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
