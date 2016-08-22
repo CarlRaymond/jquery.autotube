@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-02-18
+/*! jquery.autotube - v1.0.0 - 2016-08-21
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -7,17 +7,24 @@
 // Basic usage:
 //   $("...some link selector...").autotube();
 //
-// Uses pattern at https://github.com/umdjs/umd/blob/master/jqueryPlugin.js to declare
-// the plugin so that it works with or without an AMD-compatible module loader, like RequireJS.
-(function (factory) {
-	if (typeof define === 'function' && define.amd) {
-		// AMD. Register as an anonymous module.
+// The plugin is wrapped up in an IIFE. The argument factory is a function invoked
+// in one of three ways (depending on the environment) to register the plugin with jQuery.
+; (function(factory) {
+
+	// Register as a module in a module environment, or as a plain jQuery
+	// plugin in a bare environment.
+	if (typeof module === "object" && typeof module.exports === "object") {
+		// CommonJS environment
+		factory(require("jquery"));
+	}
+	else if (typeof define === 'function' && define.amd) {
+		// AMD environment. Register as an anonymous module.
 		define(['jquery'], factory);
 	} else {
-		// Browser globals
+		// Old-fashioned browser globals
 		factory(jQuery);
 	}
-}(function ($) {
+} (function($) {
 
 	// RegExps for YouTube link forms
 	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i; // Group 2 is video ID
@@ -271,7 +278,7 @@
 			var playerMarkup = render(info);
 			var $player = $(playerMarkup);
 
-			// Player markup not yet inserted into DOM, so an ordinary selector won't fine it.
+			// Player markup not yet inserted into DOM, so an ordinary selector won't find it.
 			var elem = $player.find("#" + info.iframeId)[0];
 
 			// Instantiate YouTube player
@@ -287,6 +294,60 @@
 
 	};
 
+	// Parses a time duration in ISO8601 format. Returns an object with fields 'hours', 'minutes', and 'seconds'.
+	var parseDuration = function(duration) {
+		// Typical duration: PT12M3S
+		// Very long video: P3W3DT20H31M21S
+		var iso8601 = /(P)([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T)([0-9]+H)?([0-9]+M)?([0-9]+S)?/;
+
+		var result = {};				
+		var matches = duration.match(iso8601);
+		if (matches == null)
+			return null;
+
+		// Set true when we see the 'T'. Changes interpretation of M unit.
+		var tmode = false;
+		matches.forEach(function(part) {
+			if (part === undefined)
+				return;
+			if (part == 'T') {
+				tmode = true;
+			}
+			var unit = part.charAt(part.length-1);
+			var val = parseInt(part.slice(0, -1), 10);
+			switch (unit) {
+				case 'Y':
+					result.years = val;
+					break;
+				case 'M':
+					if (tmode) {
+						result.minutes = val;
+					}
+					else {
+						result.months = val;
+					}
+					break;
+				case 'W':
+					result.weeks = val;
+					break;
+				case 'D':
+					result.days = val;
+					break;
+				case 'H':
+					result.hours = val;
+					break;
+				case 'M':
+					result.minutes = val;
+					break;
+				case 'S':
+					result.seconds = val;
+					break;
+			}
+
+		});
+
+		return result;
+	};
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
 	$.fn.autotube = function (method) {
@@ -313,6 +374,7 @@
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
 		videoId: videoId,
-		templateRenderer: templateRenderer
+		templateRenderer: templateRenderer,
+		parseDuration: parseDuration
 	};
 }));

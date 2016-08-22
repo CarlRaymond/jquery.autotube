@@ -246,3 +246,16 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 	$("#custom-callout-placer a:youtube").autotube(options);
 });
 
+QUnit.test("parseDuration", function(assert) {
+	var f = $.autotube.parseDuration;
+
+	var result = f('PT3M12S');
+	var expected = { minutes: 3, seconds: 12 };
+	
+	assert.propEqual(result, expected);
+
+	result = f('P2Y3M4W5DT20H31M21S');
+	expected = { years: 2, months: 3, weeks: 4, days: 5, hours: 20, minutes: 31, seconds: 21 };
+	assert.propEqual(result, expected);
+});
+
