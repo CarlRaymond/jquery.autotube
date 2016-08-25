@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-08-21
+/*! jquery.autotube - v1.0.0 - 2016-08-25
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
@@ -33,13 +33,37 @@
 	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
 	// Custom selector for YouTube URLs. Usage: $("#somediv a:youtube")...
+	// Also attaches the video ID to the link in the data-yt-video-id attribute
 	$.expr[':'].youtube = function (obj) {
 		var url = obj.href;
 		if (!url) return false;
-		return (url.match(youtubeStandardExpr) != null) ||
-			(url.match(youtubeAlternateExpr) != null) ||
-			(url.match(youtubeShortExpr) != null) ||
-			(url.match(youtubeEmbedExpr) != null);
+
+		var attr = 'yt-video-id';
+		var match = url.match(youtubeStandardExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		match = url.match(youtubeAlternateExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		match = url.match(youtubeShortExpr);
+		if (match != null) {
+			$(obj).data(attr, match[1]);
+			return true;
+		}
+
+		match = url.match(youtubeEmbedExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		return false;
 	};
 
 

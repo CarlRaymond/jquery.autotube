@@ -1,28 +1,42 @@
+var videoId = "phVdqyThPgc";
 
 QUnit.test("Selector: standard", function (assert) {
-	var videoId = "phVdqyThPgc";
 	var $set = $("#qunit-fixture .standard a:youtube");
 	assert.equal($set.length, 6, "Found standard link(s)");
 
-
+	$set.each(function(link) {
+		assert.equal($(this).data('videoId'), videoId, "videoId correct");
+	});
 });
 
 
 QUnit.test("Selector: alternate", function (assert) {
 	var $set = $("#qunit-fixture .alternate a:youtube");
 	assert.equal($set.length, 6, "Found alternate link(s)");
+
+	$set.each(function(link) {
+		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+	});
 });
 
 
 QUnit.test("Selector: short", function (assert) {
 	var $set = $("#qunit-fixture .short a:youtube");
 	assert.equal($set.length, 3, "Found short link(s)");
+
+	$set.each(function(link) {
+		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+	});
 });
 
 
 QUnit.test("Selector: embed", function (assert) {
 	var $set = $("#qunit-fixture .embed a:youtube");
 	assert.equal($set.length, 6, "Found embed link(s)");
+
+	$set.each(function(link) {
+		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+	});
 });
 
 
@@ -113,7 +127,7 @@ QUnit.test("Literal template compiles", function(assert) {
 		text = render(data);
 	});
 
-	assert.ok(text.indexOf("The quick brown fox jumped") > -1, text);
+	assert.ok(text.indexOf("The quick brown fox jumped over the lazy dogs.") > -1, text);
 
 });
 

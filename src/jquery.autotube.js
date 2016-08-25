@@ -30,13 +30,37 @@
 	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
 	// Custom selector for YouTube URLs. Usage: $("#somediv a:youtube")...
+	// Also attaches the video ID to the link in the data-video-id attribute
 	$.expr[':'].youtube = function (obj) {
 		var url = obj.href;
 		if (!url) return false;
-		return (url.match(youtubeStandardExpr) != null) ||
-			(url.match(youtubeAlternateExpr) != null) ||
-			(url.match(youtubeShortExpr) != null) ||
-			(url.match(youtubeEmbedExpr) != null);
+
+		var attr = 'videoId';
+		var match = url.match(youtubeStandardExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		match = url.match(youtubeAlternateExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		match = url.match(youtubeShortExpr);
+		if (match != null) {
+			$(obj).data(attr, match[1]);
+			return true;
+		}
+
+		match = url.match(youtubeEmbedExpr);
+		if (match != null) {
+			$(obj).data(attr, match[2]);
+			return true;
+		}
+
+		return false;
 	};
 
 
