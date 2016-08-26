@@ -123,12 +123,12 @@ QUnit.test("Literal template compiles", function(assert) {
 	var data = { speed: "quick", color: "brown", animal: "fox" };
 	var text;
 
+	var done = assert.async();
 	def.done(function(render) {
 		text = render(data);
+		assert.ok(text.indexOf("The quick brown fox jumped over the lazy dogs.") > -1, text);
+		done();
 	});
-
-	assert.ok(text.indexOf("The quick brown fox jumped over the lazy dogs.") > -1, text);
-
 });
 
 
@@ -146,6 +146,22 @@ QUnit.test("Template id may contain hyphen", function(assert) {
 		var result = renderer({});
 		assert.notEqual(result, id, "Argument not a literal template definition");
 
+		done();
+	});
+});
+
+
+QUint.test("Template data object may contain subproperties", function(assert) {
+	var templateText = "<p>The {{=sub.speed}} {{=sub.color}} {{=sub.animal}} jumped over the lazy dogs.</p>";
+	var def = $.autotube.templateRenderer(templateText);
+	var data = {
+		sub: { speed: "quick", color: "brown", animal: "fox" }
+	};
+	var done = assert.async();
+
+	def.done(function(renderer) {
+		text = renderer(data);
+		assert.equal(text, "<p>The quick brown fox jumped over the lazy dogs.</p>");
 		done();
 	});
 });
