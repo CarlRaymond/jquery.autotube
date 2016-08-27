@@ -151,7 +151,7 @@ QUnit.test("Template id may contain hyphen", function(assert) {
 });
 
 
-QUint.test("Template data object may contain subproperties", function(assert) {
+QUnit.test("Template data object may contain subproperties", function(assert) {
 	var templateText = "<p>The {{=sub.speed}} {{=sub.color}} {{=sub.animal}} jumped over the lazy dogs.</p>";
 	var def = $.autotube.templateRenderer(templateText);
 	var data = {
