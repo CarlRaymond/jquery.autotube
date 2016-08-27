@@ -15,7 +15,7 @@ QUnit.test("Selector: alternate", function (assert) {
 	assert.equal($set.length, 6, "Found alternate link(s)");
 
 	$set.each(function(link) {
-		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
 });
 
@@ -25,7 +25,7 @@ QUnit.test("Selector: short", function (assert) {
 	assert.equal($set.length, 3, "Found short link(s)");
 
 	$set.each(function(link) {
-		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
 });
 
@@ -35,7 +35,7 @@ QUnit.test("Selector: embed", function (assert) {
 	assert.equal($set.length, 6, "Found embed link(s)");
 
 	$set.each(function(link) {
-		assert.equal($(this).data('yt-video-id'), videoId, "yt-video-id correct");
+		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
 });
 
@@ -260,16 +260,69 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 	$("#custom-callout-placer a:youtube").autotube(options);
 });
 
-QUnit.test("parseDuration", function(assert) {
-	var f = $.autotube.parseDuration;
 
-	var result = f('PT3M12S');
-	var expected = { minutes: 3, seconds: 12 };
+QUnit.test("Iso8601", function(assert) {
+
+	var d1 = new Iso8601('PT3M12S');
+	var expected = { years:0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 3, seconds: 12 };
 	
-	assert.propEqual(result, expected);
+	assert.propEqual(d1, expected);
 
-	result = f('P2Y3M4W5DT20H31M21S');
+	var d2 = new Iso8601('P2Y3M4W5DT20H31M21S');
 	expected = { years: 2, months: 3, weeks: 4, days: 5, hours: 20, minutes: 31, seconds: 21 };
-	assert.propEqual(result, expected);
+	assert.propEqual(d2, expected);
 });
 
+
+QUnit.test("Iso8601.toDispalay", function(assert) {
+	var d1 = new Iso8601('PT4S');
+	assert.equal(d1.toDisplay(), '0:04', 'PT4S');
+
+	var d2 = new Iso8601('PT1M8S');
+	assert.equal(d2.toDisplay(), '1:08', 'PT1M8S');
+
+	var d3 = new Iso8601('PT1H6M9S');
+	assert.equal(d3.toDisplay(), '1:06:09', 'PT1H6M9S');
+
+	var d4 = new Iso8601('PT1M24S');
+	assert.equal(d4.toDisplay(), '1:24', 'PT1M24S');
+});
+
+
+QUnit.test("getMetadata gets metadata", function(assert) {
+	var done = assert.async();
+	$("div#get-metadata a:youtube").getMetadata()
+		.done(function() {
+			assert.ok(true, "Got metadata");
+			done();
+		});
+});
+
+QUnit.test("getMetadata invokes callback", function(assert) {
+
+	var $set = $("div#get-metadata a:youtube");
+
+	// QUnit doc sez that assert.async(n) will return a done
+	// function that can be called n times, but that doesn't
+	// seem to work. Instead, build an array of done functions
+	// for each element in the set.
+	var donesies = [];
+	$set.each(function() { donesies.push(assert.async()); });
+
+	assert.expect($set.length);
+
+	var callback = function(metadata) {
+		assert.equal(metadata.kind, "youtube#video", "Got video metadata");
+		donesies.pop()();
+	};
+
+	$("div#get-metadata a:youtube").getMetadata(callback);
+});
+
+QUnit.test("Iso8601 display", function(assert) {
+	assert.equal(new Iso8601("PT6S").toDisplay(), "0:06", "Short time");
+
+	assert.equal(new Iso8601("PT4M56S").toDisplay(), "4:56", "Medium time");
+
+	assert.equal(new Iso8601("PT1H3M19S").toDisplay(), "1:03:19", "Long time");
+});

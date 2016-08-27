@@ -1,6 +1,86 @@
-/*! jquery.autotube - v1.0.0 - 2016-08-25
+/*! jquery.autotube - v1.0.0 - 2016-08-27
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
+// Parses time durations specified in ISO8601 format. 
+// Typical duration: "PT12M3S", 12 minutes and 3 seconds
+// Very long video: "P3W3DT20H31M21S", 3 weeks, 3 days, 20 hours, 31 minutes and 21 seconds
+
+function Iso8601 (s) {
+	'use strict';
+
+	var pattern = /(P)([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T)([0-9]+H)?([0-9]+M)?([0-9]+S)?/;
+
+	this.years = this.months = this.weeks = this.days = this.hours = this.minutes = this.seconds = 0;
+
+	var matches = s.match(pattern);
+	if (matches == null)
+		return;
+
+	// Set true when we see the 'T'. Changes interpretation of M unit.
+	var tmode = false;
+	matches.shift();
+	var self = this;
+	matches.forEach(function(part) {
+		if (part === undefined)
+			return;
+		if (part == 'P')
+			return;
+		if (part == 'T') {
+			tmode = true;
+			return;
+		}
+		var unit = part.charAt(part.length-1);
+		var val = parseInt(part.slice(0, -1), 10);
+		switch (unit) {
+			case 'Y':
+				self.years = val;
+				break;
+			case 'M':
+				if (tmode) {
+					self.minutes = val;
+				}
+				else {
+					self.months = val;
+				}
+				break;
+			case 'W':
+				self.weeks = val;
+				break;
+			case 'D':
+				self.days = val;
+				break;
+			case 'H':
+				self.hours = val;
+				break;
+			case 'M':
+				self.minutes = val;
+				break;
+			case 'S':
+				self.seconds = val;
+				break;
+		}
+
+	});
+}
+
+// Returns a string with the duration:
+// 0:14
+// 4:25
+// 1:30:28
+Iso8601.prototype.toDisplay = function() {
+		var time = '';
+		time += this.seconds;
+		if (this.seconds < 10) { time = '0' + time; }
+		
+		time = this.minutes + ':' + time;
+		if (this.hours > 0) {
+			if (this.minutes < 10) { time = '0' + time; }
+			time = this.hours + ':' + time;
+		}
+
+		return time;
+	};
+
 // A jQuery plugin to find YouTube video links, load thumbnails and create a callout in markup via HTML
 // template, and play the video on the page using the YouTube IFrame API.
 //
@@ -10,6 +90,7 @@
 // The plugin is wrapped up in an IIFE. The argument factory is a function invoked
 // in one of three ways (depending on the environment) to register the plugin with jQuery.
 ; (function(factory) {
+	'use strict';
 
 	// Register as a module in a module environment, or as a plain jQuery
 	// plugin in a bare environment.
@@ -26,6 +107,8 @@
 	}
 } (function($) {
 
+	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
+
 	// RegExps for YouTube link forms
 	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i; // Group 2 is video ID
 	var youtubeAlternateExpr = /^https?:\/\/(www\.)?youtube.com\/v\/([^\/\?]+)/i; // Group 2 is video ID
@@ -33,12 +116,12 @@
 	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
 	// Custom selector for YouTube URLs. Usage: $("#somediv a:youtube")...
-	// Also attaches the video ID to the link in the data-yt-video-id attribute
+	// Also attaches the video ID to the link in the data-video-id attribute
 	$.expr[':'].youtube = function (obj) {
 		var url = obj.href;
 		if (!url) return false;
 
-		var attr = 'yt-video-id';
+		var attr = 'videoId';
 		var match = url.match(youtubeStandardExpr);
 		if (match != null) {
 			$(obj).data(attr, match[2]);
@@ -196,6 +279,45 @@
 		return def.resolve(renderer);
 	};
 
+	// Fetches video metadata for a set of links, and returns a promise.
+	var getMetadata = function(callback) {
+		var $set = this;
+
+		// Combine all video IDs into a comma-separated list
+		var ids = [];
+		$set.each(function(index) {
+			// Get id from data`
+			var id = $(this).data('videoId');
+			if (!id) {
+				// Not present. Extract and save.
+				id = videoId(this);
+				$(this).data('videoId', id);
+			}
+			ids.push(id);
+		});
+
+		var params = {
+			id: ids.join(','),
+			key: ytDataApiKey,
+			part: 'snippet,contentDetails'
+		};
+
+		// Get metadata for all videos in set
+		var def = $.get(youtubeVideoApiUrl, params);
+
+		def.done(function(data) {
+			$set.each(function(index) {
+				var vdata = data.items[index];
+				$(this).data('youtube', vdata);
+				if (callback) {
+					callback.call(this, vdata);
+				}
+			});
+		});
+
+		return def;
+	};
+
 	// Default options for plugin
 	var defaults = {
 		calloutTemplate: "video-callout-template",
@@ -297,7 +419,7 @@
 			defRenderer = templateRenderer(info.settings.playerTemplate);
 		}
 
-		// When renderer and YouTube API are ready...
+		// When renderer, data and YouTube API are ready...
 		$.when(defRenderer, apiLoaded).then(function (render) {
 			var playerMarkup = render(info);
 			var $player = $(playerMarkup);
@@ -318,60 +440,6 @@
 
 	};
 
-	// Parses a time duration in ISO8601 format. Returns an object with fields 'hours', 'minutes', and 'seconds'.
-	var parseDuration = function(duration) {
-		// Typical duration: PT12M3S
-		// Very long video: P3W3DT20H31M21S
-		var iso8601 = /(P)([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T)([0-9]+H)?([0-9]+M)?([0-9]+S)?/;
-
-		var result = {};				
-		var matches = duration.match(iso8601);
-		if (matches == null)
-			return null;
-
-		// Set true when we see the 'T'. Changes interpretation of M unit.
-		var tmode = false;
-		matches.forEach(function(part) {
-			if (part === undefined)
-				return;
-			if (part == 'T') {
-				tmode = true;
-			}
-			var unit = part.charAt(part.length-1);
-			var val = parseInt(part.slice(0, -1), 10);
-			switch (unit) {
-				case 'Y':
-					result.years = val;
-					break;
-				case 'M':
-					if (tmode) {
-						result.minutes = val;
-					}
-					else {
-						result.months = val;
-					}
-					break;
-				case 'W':
-					result.weeks = val;
-					break;
-				case 'D':
-					result.days = val;
-					break;
-				case 'H':
-					result.hours = val;
-					break;
-				case 'M':
-					result.minutes = val;
-					break;
-				case 'S':
-					result.seconds = val;
-					break;
-			}
-
-		});
-
-		return result;
-	};
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
 	$.fn.autotube = function (method) {
@@ -394,11 +462,11 @@
 		init: init
 	};
 
+	$.fn.getMetadata = getMetadata;
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
 		videoId: videoId,
-		templateRenderer: templateRenderer,
-		parseDuration: parseDuration
+		templateRenderer: templateRenderer
 	};
 }));

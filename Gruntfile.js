@@ -1,3 +1,8 @@
+var sourceFiles = [
+  'src/iso8601.js',
+  'src/jquery.autotube.js'
+  ];
+
 module.exports = function(grunt) {
 
   // Project configuration
@@ -19,7 +24,7 @@ module.exports = function(grunt) {
         stripBanners: true,
       },
       dist: {
-        src: ['src/<%= pkg.name %>.js'],
+        src: sourceFiles,
         dest: 'dist/<%= pkg.name %>.js'
       }
     },

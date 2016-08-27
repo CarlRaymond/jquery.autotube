@@ -7,6 +7,7 @@
 // The plugin is wrapped up in an IIFE. The argument factory is a function invoked
 // in one of three ways (depending on the environment) to register the plugin with jQuery.
 ; (function(factory) {
+	'use strict';
 
 	// Register as a module in a module environment, or as a plain jQuery
 	// plugin in a bare environment.
@@ -22,6 +23,8 @@
 		factory(jQuery);
 	}
 } (function($) {
+
+	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
 
 	// RegExps for YouTube link forms
 	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i; // Group 2 is video ID
@@ -193,6 +196,45 @@
 		return def.resolve(renderer);
 	};
 
+	// Fetches video metadata for a set of links, and returns a promise.
+	var getMetadata = function(callback) {
+		var $set = this;
+
+		// Combine all video IDs into a comma-separated list
+		var ids = [];
+		$set.each(function(index) {
+			// Get id from data`
+			var id = $(this).data('videoId');
+			if (!id) {
+				// Not present. Extract and save.
+				id = videoId(this);
+				$(this).data('videoId', id);
+			}
+			ids.push(id);
+		});
+
+		var params = {
+			id: ids.join(','),
+			key: ytDataApiKey,
+			part: 'snippet,contentDetails'
+		};
+
+		// Get metadata for all videos in set
+		var def = $.get(youtubeVideoApiUrl, params);
+
+		def.done(function(data) {
+			$set.each(function(index) {
+				var vdata = data.items[index];
+				$(this).data('youtube', vdata);
+				if (callback) {
+					callback.call(this, vdata);
+				}
+			});
+		});
+
+		return def;
+	};
+
 	// Default options for plugin
 	var defaults = {
 		calloutTemplate: "video-callout-template",
@@ -294,7 +336,7 @@
 			defRenderer = templateRenderer(info.settings.playerTemplate);
 		}
 
-		// When renderer and YouTube API are ready...
+		// When renderer, data and YouTube API are ready...
 		$.when(defRenderer, apiLoaded).then(function (render) {
 			var playerMarkup = render(info);
 			var $player = $(playerMarkup);
@@ -315,60 +357,6 @@
 
 	};
 
-	// Parses a time duration in ISO8601 format. Returns an object with fields 'hours', 'minutes', and 'seconds'.
-	var parseDuration = function(duration) {
-		// Typical duration: PT12M3S
-		// Very long video: P3W3DT20H31M21S
-		var iso8601 = /(P)([0-9]+Y)?([0-9]+M)?([0-9]+W)?([0-9]+D)?(T)([0-9]+H)?([0-9]+M)?([0-9]+S)?/;
-
-		var result = {};				
-		var matches = duration.match(iso8601);
-		if (matches == null)
-			return null;
-
-		// Set true when we see the 'T'. Changes interpretation of M unit.
-		var tmode = false;
-		matches.forEach(function(part) {
-			if (part === undefined)
-				return;
-			if (part == 'T') {
-				tmode = true;
-			}
-			var unit = part.charAt(part.length-1);
-			var val = parseInt(part.slice(0, -1), 10);
-			switch (unit) {
-				case 'Y':
-					result.years = val;
-					break;
-				case 'M':
-					if (tmode) {
-						result.minutes = val;
-					}
-					else {
-						result.months = val;
-					}
-					break;
-				case 'W':
-					result.weeks = val;
-					break;
-				case 'D':
-					result.days = val;
-					break;
-				case 'H':
-					result.hours = val;
-					break;
-				case 'M':
-					result.minutes = val;
-					break;
-				case 'S':
-					result.seconds = val;
-					break;
-			}
-
-		});
-
-		return result;
-	};
 
 	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
 	$.fn.autotube = function (method) {
@@ -391,11 +379,11 @@
 		init: init
 	};
 
+	$.fn.getMetadata = getMetadata;
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
 		videoId: videoId,
-		templateRenderer: templateRenderer,
-		parseDuration: parseDuration
+		templateRenderer: templateRenderer
 	};
 }));
