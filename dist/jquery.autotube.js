@@ -280,7 +280,7 @@ Iso8601.prototype.toDisplay = function() {
 	};
 
 	// Fetches video metadata for a set of links, and returns a promise.
-	var getMetadata = function(callback) {
+	var getMetadata = function(options, callback) {
 		var $set = this;
 
 		// Combine all video IDs into a comma-separated list
@@ -296,10 +296,15 @@ Iso8601.prototype.toDisplay = function() {
 			ids.push(id);
 		});
 
+		var defaults = {
+			part: 'snippet,contentDetails'
+		};
+		var settings = $.extend({}, defaults, options);
+
 		var params = {
 			id: ids.join(','),
-			key: ytDataApiKey,
-			part: 'snippet,contentDetails'
+			part: settings.part,
+			key: settings.apikey
 		};
 
 		// Get metadata for all videos in set

@@ -197,7 +197,7 @@
 	};
 
 	// Fetches video metadata for a set of links, and returns a promise.
-	var getMetadata = function(callback) {
+	var getMetadata = function(options, callback) {
 		var $set = this;
 
 		// Combine all video IDs into a comma-separated list
@@ -213,10 +213,15 @@
 			ids.push(id);
 		});
 
+		var defaults = {
+			part: 'snippet,contentDetails'
+		};
+		var settings = $.extend({}, defaults, options);
+
 		var params = {
 			id: ids.join(','),
-			key: ytDataApiKey,
-			part: 'snippet,contentDetails'
+			part: settings.part,
+			key: settings.apikey
 		};
 
 		// Get metadata for all videos in set
