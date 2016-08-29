@@ -225,6 +225,13 @@
 		def.done(function(data) {
 			$set.each(function(index) {
 				var vdata = data.items[index];
+
+				// Add autotube property with some digested data
+				var d = new Iso8601(vdata.contentDetails.duration);
+				vdata.autotube = {
+					duration: d.toDisplay()
+				};
+
 				$(this).data('youtube', vdata);
 				if (callback) {
 					callback.call(this, vdata);

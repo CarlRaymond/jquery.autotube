@@ -277,18 +277,6 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 });
 
 
-QUnit.test("Iso8601", function(assert) {
-
-	var d1 = new Iso8601('PT3M12S');
-	var expected = { years:0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 3, seconds: 12 };
-	
-	assert.propEqual(d1, expected);
-
-	var d2 = new Iso8601('P2Y3M4W5DT20H31M21S');
-	expected = { years: 2, months: 3, weeks: 4, days: 5, hours: 20, minutes: 31, seconds: 21 };
-	assert.propEqual(d2, expected);
-});
-
 
 QUnit.test("Iso8601.toDispalay", function(assert) {
 	var d1 = new Iso8601('PT4S');
@@ -334,6 +322,32 @@ QUnit.test("getMetadata invokes callback", function(assert) {
 
 	$("div#get-metadata a:youtube").getMetadata(callback);
 });
+
+
+QUnit.test("getMetadata add custom data", function(assert) {
+	var $set = $("#qunit-fixture .standard li:nth-child(1) a:youtube");
+	var done = assert.async();
+
+	$set.getMetadata(function(vdata) {
+		assert.equal(vdata.autotube.duration, "1:54");
+		done();
+	});
+});
+
+
+QUnit.test("Iso8601", function(assert) {
+
+	var d1 = new Iso8601('PT3M12S');
+	var expected = { years:0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 3, seconds: 12 };
+	
+	assert.propEqual(d1, expected);
+
+	var d2 = new Iso8601('P2Y3M4W5DT20H31M21S');
+	expected = { years: 2, months: 3, weeks: 4, days: 5, hours: 20, minutes: 31, seconds: 21 };
+	assert.propEqual(d2, expected);
+
+});
+
 
 QUnit.test("Iso8601 display", function(assert) {
 	assert.equal(new Iso8601("PT6S").toDisplay(), "0:06", "Short time");

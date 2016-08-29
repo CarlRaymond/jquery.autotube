@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-08-27
+/*! jquery.autotube - v1.0.0 - 2016-08-29
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -308,6 +308,13 @@ Iso8601.prototype.toDisplay = function() {
 		def.done(function(data) {
 			$set.each(function(index) {
 				var vdata = data.items[index];
+
+				// Add autotube property with some digested data
+				var d = new Iso8601(vdata.contentDetails.duration);
+				vdata.autotube = {
+					duration: d.toDisplay()
+				};
+
 				$(this).data('youtube', vdata);
 				if (callback) {
 					callback.call(this, vdata);

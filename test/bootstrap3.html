@@ -1,0 +1,75 @@
+<html>
+<head>
+<title>jQuery.autotube Poster Test</title>
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="../dist/jquery.autotube.js"></script>
+<script src="apikey.js"></script>
+
+<!-- Bootstrap 3 -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<!-- Font Awesome -->
+<script src="https://use.fontawesome.com/fb5f062d85.js"></script>
+
+<script type="text/javascript">
+var callback = function(metadata) {
+	// Do something with the metadata. "this" is the link.
+};
+
+var injector = function(metadata, posterElement) {
+	// Inject poster at end of link's parent element
+	$(this).parent().append(posterElement);
+
+};
+
+$(document).ready(function() {
+	$("a:youtube").getMetadata({
+		apiKey: ytDataApiKey,
+		metadataCallback: callback
+	});
+
+	// poster will fetch the metadata and instantiate the named template using the built-in
+	// template compiler. Finally, it will invoke the named injector function with the new
+	// DOM node that represents the poster, for inserting into the document.
+	$("a.youtube").poster({
+		apiKey: ytDataApiKey,		// Your own YouTube data API key
+		template: "poster",			// The id of the poster template
+		injector: injector			// A function to receive the compiled template
+	});
+
+	// poster with an external template compiler
+	$("a.youtube").poster({
+		apiKey: ytDataApiKey,		// Your own YouTube data API key goes here
+		template: someCompiledTemplateFunction,
+		injector: injector
+	});
+});
+</script>
+
+<script id="poster" type="text/template">
+	<div class="poster" id="{{=id}}" style="background-image:url({{=snippet.thumbnails.default.url}}); width={{=snippet.thumbnails.default.width}} height={{=snippet.thumbnails.default.height}}">
+	<h1 class="title">{{=snippet.title}}</h1>
+	<button type="button"" class="btn btn-default btn-play"><strong><i class="fa fa-play"></i> Play video</strong> <span class="duration">{{=autotube.duration}}</span></button>
+	</div>
+</script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-10 col-md-offset-1">
+<h1>jQuery.autotube Poster Test</h1>
+<p>This is a page with a some video links on it. The plugin will fetch the associated
+	metadata, and render a clickable poster with the title and a "Play" button that includes
+	the playing time of the video.</p>
+
+<p>Here's a <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a> video. They are some cats.</p>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
