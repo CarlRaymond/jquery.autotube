@@ -277,58 +277,29 @@ QUnit.test("Custom callout placer invoked", function(assert) {
 });
 
 
-
-QUnit.test("Iso8601.toDispalay", function(assert) {
-	var d1 = new Iso8601('PT4S');
-	assert.equal(d1.toDisplay(), '0:04', 'PT4S');
-
-	var d2 = new Iso8601('PT1M8S');
-	assert.equal(d2.toDisplay(), '1:08', 'PT1M8S');
-
-	var d3 = new Iso8601('PT1H6M9S');
-	assert.equal(d3.toDisplay(), '1:06:09', 'PT1H6M9S');
-
-	var d4 = new Iso8601('PT1M24S');
-	assert.equal(d4.toDisplay(), '1:24', 'PT1M24S');
-});
-
-
-QUnit.test("getMetadata gets metadata", function(assert) {
-	var done = assert.async();
-	$("div#get-metadata a:youtube").getMetadata()
-		.done(function() {
-			assert.ok(true, "Got metadata");
-			done();
-		});
-});
-
 QUnit.test("getMetadata invokes callback", function(assert) {
 
 	var $set = $("div#get-metadata a:youtube");
+	assert.ok($set.length > 1, "Set contains at least one element");
 
-	// QUnit doc sez that assert.async(n) will return a done
-	// function that can be called n times, but that doesn't
-	// seem to work. Instead, build an array of done functions
-	// for each element in the set.
-	var donesies = [];
-	$set.each(function() { donesies.push(assert.async()); });
-
-	assert.expect($set.length);
+	var done = assert.async($set.length);
 
 	var callback = function(metadata) {
-		assert.equal(metadata.kind, "youtube#video", "Got video metadata");
-		donesies.pop()();
+			assert.equal(metadata.kind, "youtube#video", "Callback invoked with metadata");
+			done();
 	};
 
-	$("div#get-metadata a:youtube").getMetadata(callback);
+	var options = { apikey: ytDataApiKey };
+	$set.getMetadata(options, callback);
 });
 
 
-QUnit.test("getMetadata add custom data", function(assert) {
+QUnit.test("getMetadata adds custom data", function(assert) {
 	var $set = $("#qunit-fixture .standard li:nth-child(1) a:youtube");
 	var done = assert.async();
 
-	$set.getMetadata(function(vdata) {
+	var options = { apikey: ytDataApiKey };
+	$set.getMetadata(options, function(vdata) {
 		assert.equal(vdata.autotube.duration, "1:54");
 		done();
 	});
@@ -356,3 +327,19 @@ QUnit.test("Iso8601 display", function(assert) {
 
 	assert.equal(new Iso8601("PT1H3M19S").toDisplay(), "1:03:19", "Long time");
 });
+
+
+QUnit.test("Iso8601.toDispalay", function(assert) {
+	var d1 = new Iso8601('PT4S');
+	assert.equal(d1.toDisplay(), '0:04', 'PT4S');
+
+	var d2 = new Iso8601('PT1M8S');
+	assert.equal(d2.toDisplay(), '1:08', 'PT1M8S');
+
+	var d3 = new Iso8601('PT1H6M9S');
+	assert.equal(d3.toDisplay(), '1:06:09', 'PT1H6M9S');
+
+	var d4 = new Iso8601('PT1M24S');
+	assert.equal(d4.toDisplay(), '1:24', 'PT1M24S');
+});
+
