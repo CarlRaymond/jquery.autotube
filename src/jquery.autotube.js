@@ -66,6 +66,7 @@
 		return false;
 	};
 
+	var templates = new TemplateEngine();
 
 	// Tracks YouTube API loading. Resolved when API loaded and ready.
 	var apiLoaded = $.Deferred();
@@ -114,86 +115,6 @@
 		if (match != null)
 			return match[2];
 
-	};
-
-	// Matches HTML4 compliant id names. HTML5 is more lax,
-	// so lax that it can't be done with a reasonable RE.
-	// So this is fine.
-	var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
-
-	// Matches a "url", which is anything that starts with a slash
-	var urlexpr = /^\/.*/;
-
-	// Very simple template engine adapted from John Resig's Secrets of the
-	// Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
-	// Good luck figuring it out (the original was worse).
-	var templateCache = {};
-
-	// Invoked to compile template text into a function
-	var compile = function(text) {
-		// Compile a rendering function using
-		// Function constructor and buttload of string replacements
-		return new Function("obj",
-			"var p=[], print=function() { p.push.apply(p, arguments); };" +
-			"with(obj) { p.push('" +
-			text
-				.replace(/[\r\t\n]/g, " ")
-				.split("{{").join("\t")
-				.replace(/((^|}})[^\t]*)'/g, "$1\r")
-				.replace(/\t=(.*?)}}/g, "',$1,'")
-				.split("\t").join("');")
-				.split("}}").join("p.push('")
-				.split("\r").join("\\'") +
-			"');} return p.join('');");
-	};
-
-	// Returns a deferred that resolves to a template renderer function. Execute the function
-	// with a data object to render the template.
-	// The specifier can be the id of a script tag containing the template, or a url
-	// to fetch the template from, or the template text itself.
-	var templateRenderer = function(spec) {
-		var def = $.Deferred();
-		var renderer;
-
-		// Template already cached?
-		if (templateCache[spec]) {
-			def.resolve(templateCache[spec]);
-			return def;
-		}
-
-		// If id passed, get template from DOM
-		if (idexpr.test(spec)) {
-			var $specNode = $("#" + spec);
-			if ($specNode.length === 0)
-				throw('Template not found: "' + spec + '". Use the "calloutTemplate" option with the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
-			renderer = compile($specNode.html());
-			templateCache[spec] = renderer;
-			def.resolve(renderer);
-			return def;			
-		}
-
-		// If url passed, load template AJAXically.
-		if (urlexpr.test(spec)) {
-			var req = $.ajax(spec, { dataType: "html"});
-			var compiled = req.then(function(text) {
-				renderer = compile(text);
-				templateCache[spec] = renderer;
-				return renderer;
-			});
-
-			req.fail(function (jqXHR, textStatus, errorThrown ) {
-				// Can't throw here (who would catch it?)
-				if (window.console) {
-					console.log('Error fetching template "' + spec + '": ' + errorThrown); 
-				}
-			});
-
-			return compiled;
-		}
-
-		// Otherwise, spec is raw template text. Compile into a renderer, but don't cache.
-		renderer = compile(spec);
-		return def.resolve(renderer);
 	};
 
 	// Fetches video metadata for a set of links, and returns a promise.
@@ -275,7 +196,7 @@
 		}
 		else {
 			// Compile the callout template renderer
-			defRenderer = templateRenderer(settings.calloutTemplate);
+			defRenderer = templates.renderer(settings.calloutTemplate);
 		}
 
 		var set = this;
@@ -345,7 +266,7 @@
 		}
 		else {
 			// Compile the callout template renderer
-			defRenderer = templateRenderer(info.settings.playerTemplate);
+			defRenderer = templates.renderer(info.settings.playerTemplate);
 		}
 
 		// When renderer, data and YouTube API are ready...
@@ -395,7 +316,6 @@
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
-		videoId: videoId,
-		templateRenderer: templateRenderer
+		videoId: videoId
 	};
 }));

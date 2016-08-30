@@ -1,5 +1,6 @@
 var sourceFiles = [
   'src/iso8601.js',
+  'src/templateEngine.js',
   'src/jquery.autotube.js'
   ];
 

@@ -50,7 +50,8 @@ QUnit.test("videoId", function (assert) {
 
 
 QUnit.test("Template renderer created from id", function(assert) {
-	var def = $.autotube.templateRenderer("test-template");
+	var engine = new TemplateEngine();
+	var def = engine.renderer("test-template");
 	var data = { city: "Spain", location: "plain" };
 	def.done(function(renderer) {
 		var result = renderer(data);
@@ -61,7 +62,8 @@ QUnit.test("Template renderer created from id", function(assert) {
 
 QUnit.test("Template referenced by id is cached", function(assert) {
 	var id = "cached-template";
-	var def1 = $.autotube.templateRenderer(id);
+	var engine = new TemplateEngine();
+	var def1 = engine.renderer(id);
 	var testDone = assert.async();
 
 	// Mark the renderer
@@ -69,7 +71,7 @@ QUnit.test("Template referenced by id is cached", function(assert) {
 		renderer1.tag = "x";		
 
 		// Get it again, check that it's marked
-		var def2 = $.autotube.templateRenderer(id);
+		var def2 = engine.renderer(id);
 		def2.done(function(renderer2) {
 			assert.equal(renderer2.tag, "x", "Cached renderer returned on reuse");
 
@@ -80,14 +82,16 @@ QUnit.test("Template referenced by id is cached", function(assert) {
 
 
 QUnit.test("Bad template id throws exception", function(assert) {
+	var engine = new TemplateEngine();
 	assert.throws(function() {
-		$.autotube.templateRenderer("badid");
+		engine.renderer("badid");
 	}, "Exception thrown");
 });
 
 
 QUnit.test("Template renderer created from url", function(assert) {
-	var def = $.autotube.templateRenderer("/test/template1.html");
+	var engine = new TemplateEngine();
+	var def = engine.renderer("/test/template1.html");
 	var data = { speed: "quick", color: "brown", animal: "fox" };
 	var done = assert.async();
 	def.done(function(renderer) {
@@ -99,8 +103,9 @@ QUnit.test("Template renderer created from url", function(assert) {
 
 
 QUnit.test("Template referenced by url is cached", function(assert) {
+	var engine = new TemplateEngine();
 	var url = "/test/callout-template.html";
-	var def1 = $.autotube.templateRenderer(url);
+	var def1 = engine.renderer(url);
 	var testDone = assert.async();
 
 	// Mark the renderer
@@ -108,7 +113,7 @@ QUnit.test("Template referenced by url is cached", function(assert) {
 		r1.tag = "z";
 
 		// Get it again, check that it's marked
-		var def2 = $.autotube.templateRenderer(url);
+		var def2 = engine.renderer(url);
 		def2.done(function(r2) {
 			assert.equal(r2.tag, "z", "Cached renderer returned on reuse");
 			testDone();
@@ -118,8 +123,9 @@ QUnit.test("Template referenced by url is cached", function(assert) {
 
 
 QUnit.test("Literal template compiles", function(assert) {
+	var engine = new TemplateEngine();
 	var templateText = "<p>The {{=speed}} {{=color}} {{=animal}} jumped over the lazy dogs.</p>";
-	var def = $.autotube.templateRenderer(templateText);
+	var def = engine.renderer(templateText);
 	var data = { speed: "quick", color: "brown", animal: "fox" };
 	var text;
 
@@ -133,9 +139,9 @@ QUnit.test("Literal template compiles", function(assert) {
 
 
 QUnit.test("Template id may contain hyphen", function(assert) {
-
+	var engine = new TemplateEngine();
 	var id = "hyphenated-name";
-	var def = $.autotube.templateRenderer(id);
+	var def = engine.renderer(id);
 	var done = assert.async();
 
 	def.done(function(renderer) {
@@ -152,8 +158,9 @@ QUnit.test("Template id may contain hyphen", function(assert) {
 
 
 QUnit.test("Template data object may contain subproperties", function(assert) {
+	var engine = new TemplateEngine();
 	var templateText = "<p>The {{=sub.speed}} {{=sub.color}} {{=sub.animal}} jumped over the lazy dogs.</p>";
-	var def = $.autotube.templateRenderer(templateText);
+	var def = engine.renderer(templateText);
 	var data = {
 		sub: { speed: "quick", color: "brown", animal: "fox" }
 	};
