@@ -350,3 +350,32 @@ QUnit.test("Iso8601.toDispalay", function(assert) {
 	assert.equal(d4.toDisplay(), '1:24', 'PT1M24S');
 });
 
+
+QUnit.test("YoutubeApiLoader loads API", function(assert) {
+	var loader = new YoutubeApiLoader();
+	var done = assert.async();
+
+	var p = loader.load().done(function() {
+		assert.equal(typeof(YT.Player), "function");
+		done();
+	});
+});
+
+
+QUnit.test("YoutubeApiLoader multiple promises resolve", function(assert) {
+	var loader = new YoutubeApiLoader();
+	var done = assert.async(2);
+
+	var p1 = loader.load();
+	p1.done(function() {
+		assert.ok(true, "p1 done");
+		done();
+	});
+
+	var p2 = loader.load();
+	p2.done(function() {
+		assert.ok(true, "p2 done");
+		done();
+	});
+
+});

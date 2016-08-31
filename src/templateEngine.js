@@ -8,14 +8,16 @@
 // 2. A URL to a template file,
 // 3. The literal template text itslef.
 //
-// In each case, Renderer returns a function which is invoked on a data object
-// to render a template. The compiled templates are cached, and so can be
-// repeatedly invoked with little additional overhead.
+// In each case, Renderer returns a deferred object that resolves to a function
+// which is invoked on a data object to render a template.
+// Compiled templates loaded by id or url are cached, and so can be repeatedly
+// invoked with little additional overhead. Templates created by passing the
+// template text as a string literal are not cached.
 //
 // In all cases, Renderer returns a deferred, which resolves to the rendering
-// function.
+// function. Invoke the renderer with a data object to instantiate the template.
 //
-// Case 1: Compile a template in markup, by enclosing it in <script> tags
+// Case 1: Compile a template in markup, by enclosing it in a <script> tag
 // to prevent the browser from rendering the template text directly:
 //
 //	<script id="inlineTemplate'' type="text/template">
@@ -80,7 +82,7 @@ function TemplateEngine() {
 	};
 
 	// Returns a deferred that resolves to a template renderer function. Execute the function
-	// with a data object to render the template.
+	// with a data object to instantiate the template.
 	// The specifier can be the id of a script tag containing the template, or a url
 	// to fetch the template from, or the template text itself.
 	this.renderer = function(spec) {
@@ -97,7 +99,7 @@ function TemplateEngine() {
 		if (idexpr.test(spec)) {
 			var $specNode = $("#" + spec);
 			if ($specNode.length === 0)
-				throw('Template not found: "' + spec + '". Use the "calloutTemplate" option with the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
+				throw('Template not found: "' + spec + '". Use the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
 			renderer = compile($specNode.html());
 			cache[spec] = renderer;
 			def.resolve(renderer);

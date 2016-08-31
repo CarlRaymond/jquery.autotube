@@ -68,24 +68,6 @@
 
 	var templates = new TemplateEngine();
 
-	// Tracks YouTube API loading. Resolved when API loaded and ready.
-	var apiLoaded = $.Deferred();
-
-	// True when API has been requested.
-	var apiRequested = false;
-
-	// When YouTube api is ready, it invokes this handler.
-	window.onYouTubeIframeAPIReady = function() {
-		apiLoaded.resolve();
-	};
-
-	// Invoke to load YouTube API, then wait on apiLoaded.
-	var requestApi = function() {
-		if (!apiRequested) {
-			apiRequested = true;
-			$.getScript("https://www.youtube.com/iframe_api");
-		}
-	};
 
 
 	// Default placer to position callout in the document

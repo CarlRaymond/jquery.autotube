@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-08-29
+/*! jquery.autotube - v1.0.0 - 2016-08-31
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -81,6 +81,50 @@ Iso8601.prototype.toDisplay = function() {
 		return time;
 	};
 
+;(function () {
+
+	// A simple wrapper around the YouTube IFrame API. Create an instance of
+	// YoutubeApiLoader, and invoke the load function. It will return a
+	// promise that will resolve when the API is loaded.
+	// The load method can be called multiple times, even across multiple
+	// instances, but the API will only be loaded once.
+
+	YoutubeApiLoader = function() {
+
+
+		// Invoke to load YouTube API. Returns a promise the caller can wait on.
+		// If getScript fails, we reject the deferred the client is waiting on.
+		// If getScript succeeds, the API is still not fully loaded until the
+		// ready handler is invoked, so do nothing.
+		this.load = function() {
+			if (!YoutubeApiLoader.apiRequested) {
+				YoutubeApiLoader.apiRequested = true;
+
+				$.getScript("https://www.youtube.com/iframe_api")
+					.fail(function(jqxhr, settings, exception ) {
+						YoutubeApiLoader.apiLoaded.reject("Unable to load YouTube IFrame API.: " + exception);
+					});
+			}
+
+			return YoutubeApiLoader.apiLoaded.promise();
+		};
+	};
+
+
+	// Store singleton properties on the function object itself.
+	// Tracks YouTube API loading. Resolved when API loaded and ready.
+	YoutubeApiLoader.apiLoaded = $.Deferred();
+
+	// True when API has been requested.
+	YoutubeApiLoader.apiRequested = false;
+
+	// When YouTube api is ready, it invokes this handler.
+	window.onYouTubeIframeAPIReady = function() {
+		YoutubeApiLoader.apiLoaded.resolve();
+	};
+
+})();
+
 // Very simple template engine adapted from John Resig's Secrets of the
 // Javascript Ninja, and http://ejohn.org/blog/javascript-micro-templating.
 // Good luck figuring it out (the original was worse).
@@ -91,14 +135,16 @@ Iso8601.prototype.toDisplay = function() {
 // 2. A URL to a template file,
 // 3. The literal template text itslef.
 //
-// In each case, Renderer returns a function which is invoked on a data object
-// to render a template. The compiled templates are cached, and so can be
-// repeatedly invoked with little additional overhead.
+// In each case, Renderer returns a deferred object that resolves to a function
+// which is invoked on a data object to render a template.
+// Compiled templates loaded by id or url are cached, and so can be repeatedly
+// invoked with little additional overhead. Templates created by passing the
+// template text as a string literal are not cached.
 //
 // In all cases, Renderer returns a deferred, which resolves to the rendering
-// function.
+// function. Invoke the renderer with a data object to instantiate the template.
 //
-// Case 1: Compile a template in markup, by enclosing it in <script> tags
+// Case 1: Compile a template in markup, by enclosing it in a <script> tag
 // to prevent the browser from rendering the template text directly:
 //
 //	<script id="inlineTemplate'' type="text/template">
@@ -163,7 +209,7 @@ function TemplateEngine() {
 	};
 
 	// Returns a deferred that resolves to a template renderer function. Execute the function
-	// with a data object to render the template.
+	// with a data object to instantiate the template.
 	// The specifier can be the id of a script tag containing the template, or a url
 	// to fetch the template from, or the template text itself.
 	this.renderer = function(spec) {
@@ -180,7 +226,7 @@ function TemplateEngine() {
 		if (idexpr.test(spec)) {
 			var $specNode = $("#" + spec);
 			if ($specNode.length === 0)
-				throw('Template not found: "' + spec + '". Use the "calloutTemplate" option with the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
+				throw('Template not found: "' + spec + '". Use the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
 			renderer = compile($specNode.html());
 			cache[spec] = renderer;
 			def.resolve(renderer);
@@ -282,24 +328,6 @@ function TemplateEngine() {
 
 	var templates = new TemplateEngine();
 
-	// Tracks YouTube API loading. Resolved when API loaded and ready.
-	var apiLoaded = $.Deferred();
-
-	// True when API has been requested.
-	var apiRequested = false;
-
-	// When YouTube api is ready, it invokes this handler.
-	window.onYouTubeIframeAPIReady = function() {
-		apiLoaded.resolve();
-	};
-
-	// Invoke to load YouTube API, then wait on apiLoaded.
-	var requestApi = function() {
-		if (!apiRequested) {
-			apiRequested = true;
-			$.getScript("https://www.youtube.com/iframe_api");
-		}
-	};
 
 
 	// Default placer to position callout in the document
