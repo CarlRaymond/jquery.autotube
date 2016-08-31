@@ -60,7 +60,7 @@ function TemplateEngine() {
 	// Matches a "url", which is anything that starts with a slash
 	var urlexpr = /^\/.*/;
 
-    // Cache for loaded templates
+	// Cache for loaded templates
 	var cache = {};
 
 	// Invoked to compile template text into a function
