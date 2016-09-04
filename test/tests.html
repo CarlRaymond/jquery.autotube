@@ -7,23 +7,37 @@
 
   <style type="text/css">
   .video-callout {
-  	margin: 0 10px 10px 0;
+  	margin: 0 0 10px 0;
   	padding: 10px;
   	height: 204px;
-  	width: 270px;
+  	width: 240px;
   	background-color: #fff;
   	border: 1px solid gray;
   	box-shadow: 2px 2px 2px black;
   	border-radius: 4px;
   	float: right;
+	clear: both;
   }
+
   .video-poster {
   	background-repeat: no-repeat;
   	background-size: 240px 180px;
   	background-position: 0 -23px;
   	height: 134px;
-  	margin-bottom: 10px;	
+  	margin-bottom: 10px;
+	padding: 10px;
+	position: relative;
   }
+
+  .video-poster-button {
+	  position: absolute;
+	  left: 10px;
+	  bottom: 10px;
+  }
+
+  .video-title {
+  }
+  
   </style>
 </head>
 <body>
@@ -84,6 +98,7 @@
 				<li><a href="https://youtu.be/MkQwJOLfr1k">Talking cat video</a></li>
 			</ul>
 		</div>
+
 	</div>
 
 	<div id="default-callout-placer">
@@ -106,22 +121,29 @@
 		<p id="callout-link-click-p">Here's a video of <a href="https://youtu.be/-21iYoe7cI4">Cole and Marmalade</a>.</p>
 	</div>
 
-	<!-- Template for video callout created from URL -->
-	<script id="video-callout-template" type="text/html">
+	<div id="posters">
+		<p>Posters</p>
+		<ul>
+			<li><a href="https://youtu.be/-21iYoe7cI4">Cat video</a></li>
+			<li><a href="https://youtu.be/nGeKSiCQkPw">Dog video</a></li>
+			<li><a href="https://youtu.be/MkQwJOLfr1k">Talking cat video</a></li>
+		</ul>
+	</div>
+
+
+	<!-- Template for video poster created from links -->
+	<script id="video-poster" type="text/html">
 		<div class="video-callout">
-			<a href="#" role="button" data-toggle="modal" data-target="{{=playerId}}">
-				<div class="video-poster" style="background-image: url({{=posterUrl}})" />
+			<a href="#" role="button" data-toggle="modal" data-target="">
+				<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
+					<button type="button" class="btn btn-primary video-poster-button"><strong>Play video</strong> {{=autotube.duration}}</button>
+				</div>
 			</a>
-			<p><a href="#"><strong>Video: <em>{{=title}}</em></strong></a></p>
+			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>
 		</div>
 	</script>
 
-	<!-- Template for video player -->
-	<script id="video-player-template" type="text/html">
-	<h3>{{=title}}</h3>
-	<div id="{{=playerId}}" class="video-player"></div>
-	<p>The video should be above this text.</p>
-	</script>
+
 
 
 	<!-- Template for built-in template parser -->

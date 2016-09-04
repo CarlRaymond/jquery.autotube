@@ -36,3 +36,16 @@ Hide
 Show
   Show first player in selection
 
+----
+
+<script id="poster-template" type="text/x-template">
+<div id="youtube-{{=id}}" class="youtube-poster">
+  ...
+</div>
+</script>
+
+$("div.main a:youtube").posters({ apikey: <your key>, posterimage: 'medium', template: 'poster-template' }, function(poster) {
+  // Insert poster into doc
+  var $poster = $(poster);
+  $(this).parent().append($poster);
+});

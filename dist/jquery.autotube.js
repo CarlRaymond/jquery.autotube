@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-08-31
+/*! jquery.autotube - v1.0.0 - 2016-09-03
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -147,18 +147,18 @@ window.onYouTubeIframeAPIReady = function() {
 //  </script>
 // ...
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("inlineTemplate");
-// defRenderer.done(function(renderer) {
-//		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("inlineTemplate");
+// defRenderer.done(function(template) {
+//		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with rendered markup.
 // };
 //
 // Case 2: Compile a template fetched by URL:
 //
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("/some/url/to/myTemplate.html");
-// defRenderer.done(function(renderer) {
-//		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("/some/url/to/myTemplate.html");
+// defRenderer.done(function(template) {
+//		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with rendered markup.
 // });
 // 
@@ -166,9 +166,9 @@ window.onYouTubeIframeAPIReady = function() {
 // Case 3: Compile a literal template:
 //
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("<p>The {{=weather}} in {{=locale}}... </p>");
-// derRenderer.done(function(renderer) {
-// 		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("<p>The {{=weather}} in {{=locale}}... </p>");
+// derRenderer.done(function(template) {
+// 		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with the rendered markup.
 // });
 
@@ -207,9 +207,9 @@ function TemplateEngine() {
 	// with a data object to instantiate the template.
 	// The specifier can be the id of a script tag containing the template, or a url
 	// to fetch the template from, or the template text itself.
-	this.renderer = function(spec) {
+	this.template = function(spec) {
 		var def = $.Deferred();
-		var renderer;
+		var template;
 
 		// Template already cached?
 		if (cache[spec]) {
@@ -222,9 +222,9 @@ function TemplateEngine() {
 			var $specNode = $("#" + spec);
 			if ($specNode.length === 0)
 				throw('Template not found: "' + spec + '". Use the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
-			renderer = compile($specNode.html());
-			cache[spec] = renderer;
-			def.resolve(renderer);
+			template = compile($specNode.html());
+			cache[spec] = template;
+			def.resolve(template);
 			return def;			
 		}
 
@@ -232,9 +232,9 @@ function TemplateEngine() {
 		if (urlexpr.test(spec)) {
 			var req = $.ajax(spec, { dataType: "html"});
 			var compiled = req.then(function(text) {
-				renderer = compile(text);
-				cache[spec] = renderer;
-				return renderer;
+				template = compile(text);
+				cache[spec] = template;
+				return template;
 			});
 
 			req.fail(function (jqXHR, textStatus, errorThrown ) {
@@ -248,8 +248,8 @@ function TemplateEngine() {
 		}
 
 		// Otherwise, spec is raw template text. Compile into a renderer, but don't cache.
-		renderer = compile(spec);
-		return def.resolve(renderer);
+		template = compile(spec);
+		return def.resolve(template);
 	};
 
 }
@@ -279,6 +279,13 @@ function TemplateEngine() {
 		factory(jQuery);
 	}
 } (function($) {
+
+	var defaults = {
+		part: 'snippet,contentDetails',
+		datakey : 'youtube'
+	};
+
+
 
 	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
 
@@ -322,7 +329,8 @@ function TemplateEngine() {
 		return false;
 	};
 
-	var templates = new TemplateEngine();
+	// Template parsing engine
+	var templateEngine = new TemplateEngine();
 
 
 
@@ -355,9 +363,13 @@ function TemplateEngine() {
 
 	};
 
-	// Fetches video metadata for a set of links, and returns a promise.
-	var getMetadata = function(options, callback) {
-		var $set = this;
+
+	// Gets the metadata for one or more videos. Each link has its metadata
+	// stored in the data collection under the "youtube" property, including
+	// extra data in the "autotube" property.
+	// Returns a deferred that will resolve when the GET request from Youtube
+	// completes.
+	var _fetchMetadata = function($set, settings) {
 
 		// Combine all video IDs into a comma-separated list
 		var ids = [];
@@ -372,11 +384,6 @@ function TemplateEngine() {
 			ids.push(id);
 		});
 
-		var defaults = {
-			part: 'snippet,contentDetails'
-		};
-		var settings = $.extend({}, defaults, options);
-
 		var params = {
 			id: ids.join(','),
 			part: settings.part,
@@ -384,7 +391,7 @@ function TemplateEngine() {
 		};
 
 		// Get metadata for all videos in set
-		var def = $.get(youtubeVideoApiUrl, params);
+		def = $.get(youtubeVideoApiUrl, params);
 
 		def.done(function(data) {
 			$set.each(function(index) {
@@ -396,93 +403,57 @@ function TemplateEngine() {
 					duration: d.toDisplay()
 				};
 
-				$(this).data('youtube', vdata);
-				if (callback) {
-					callback.call(this, vdata);
-				}
+				$(this).data(settings.datakey, vdata);
 			});
 		});
 
 		return def;
 	};
 
-	// Default options for plugin
-	var defaults = {
-		calloutTemplate: "video-callout-template",
-		playerTemplate: "video-player-template",
-		calloutImageFilename: "default.jpg",
-		calloutCallback: defaultCalloutCallback,
-		playerCallback: defaultPlayerCallback,
-		width: 640,
-		height: 360
-	};
+	// Fetches video metadata for a set of links, and invokes a callback for each.
+	// The options object must include the apikey property, with the client's Youtube
+	// Data API key.
+	var getMetadata = function(options, callback) {
+		var $set = this;
 
-	// Plugin method "init"
-	var init = function (options) {
 		var settings = $.extend({}, defaults, options);
 
-		// For each element, init will attach data, consisting of the settings and the per-link info.
-		// Ensure init not already applied to set. Find elements with autotube data on them.
-		if (this.filter(function () { return $(this).data('autotube'); }).length !== 0) {
-			$.error('Autotube already applied to a selected element');
-		}
-
-		var defRenderer;
-		// User-supplied callout renderer?
-		if (settings.calloutRenderer) {
-			defRenderer = $.Deferred().resolve(settings.calloutRenderer);
-		}
-		else {
-			// Compile the callout template renderer
-			defRenderer = templates.renderer(settings.calloutTemplate);
-		}
-
-		var set = this;
-		defRenderer.done(function(render) {
-			// Process each link
-			set.each(function (index) {
-				var $link = $(this);
-				var vid = videoId(this);
-				var title = $link.data("title") || $link.text();
-
-				// Create per-link info object to attach to the link
-				var info = {
-					settings: settings,
-					videoId: vid,
-					posterId: "video-poster-" + index,
-					playerId: "video-player-" + index,
-					iframeId: "video-iframe-" + index,
-					posterUrl: 'https://img.youtube.com/vi/' + vid + '/' + settings.calloutImageFilename,
-					title: title
-				};
-
-				// Render the callout
-				var calloutMarkup = render(info);
-				var $callout = $(calloutMarkup);
-
-				// Remove href from link
-				$link.attr("href", "#");
-
-				// Add click handler to original link and all links in callout
-				var $openers = $("a[href='#']", $callout).add($link);
-				$openers.on("click.autotube", null, info, preparePlayer);
-
-				// Save info on the link
-				$link.data("autotube", info);
-
-				// Invoke callback to place elements and do any necessary hookuping.
-				settings.calloutCallback(info, $link, $callout);
-
-			});
+		_fetchMetadata($set, settings).done(function() {
+			if (callback) {
+				$set.each(function() {
+					var metadata = $(this).data(settings.datakey);
+					callback.call(this, metadata);
+				});
+			}
 		});
 
-		return settings;
+		return $set;
 	};
 
-	// Plugin method "stop"
-	var stop = function () {
 
+	// Get metadata for the links, compile the template, then instantiate the template for each,
+	// and invoke the callback.
+	var poster = function(options, callback) {
+		var $set = this;
+
+		var settings = $.extend({}, defaults, options);
+
+		// Get template renderer
+		var templateReady = templateEngine.template(settings.templatespec);
+		
+		// Get the metadata
+		var metadataReady = _fetchMetadata($set, settings);
+
+		$.when(templateReady, metadataReady).done(function(template, metadata) {
+			$set.each(function() {
+				var data = $(this).data(settings.datakey);
+				var html = template(data);
+				var elem = $(html);
+				callback.call(this, elem, data);
+			});
+		});
 	};
+
 
 	// Invoked when an opener link in the callout is clicked
 	var preparePlayer = function(event) {
@@ -493,8 +464,7 @@ function TemplateEngine() {
 		// Player already instantiated?
 		// TODO ...
 
-
-		requestApi();
+		var loader = new YoutubeApiLoader().load();
 
 		// Render the player
 		var defRenderer;
@@ -508,7 +478,7 @@ function TemplateEngine() {
 		}
 
 		// When renderer, data and YouTube API are ready...
-		$.when(defRenderer, apiLoaded).then(function (render) {
+		$.when(defRenderer, loader).then(function (render) {
 			var playerMarkup = render(info);
 			var $player = $(playerMarkup);
 
@@ -545,12 +515,8 @@ function TemplateEngine() {
 	};
 
 
-	// Callable plugin methods
-	var methods = {
-		init: init
-	};
-
 	$.fn.getMetadata = getMetadata;
+	$.fn.poster = poster;
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {

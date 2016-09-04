@@ -25,18 +25,18 @@
 //  </script>
 // ...
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("inlineTemplate");
-// defRenderer.done(function(renderer) {
-//		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("inlineTemplate");
+// defRenderer.done(function(template) {
+//		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with rendered markup.
 // };
 //
 // Case 2: Compile a template fetched by URL:
 //
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("/some/url/to/myTemplate.html");
-// defRenderer.done(function(renderer) {
-//		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("/some/url/to/myTemplate.html");
+// defRenderer.done(function(template) {
+//		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with rendered markup.
 // });
 // 
@@ -44,9 +44,9 @@
 // Case 3: Compile a literal template:
 //
 // var engine = new TemplateEngine();
-// var defRenderer = engine.Renderer("<p>The {{=weather}} in {{=locale}}... </p>");
-// derRenderer.done(function(renderer) {
-// 		var result = renderer({ weather: "rain", locale: "Spain" });
+// var defRenderer = engine.template("<p>The {{=weather}} in {{=locale}}... </p>");
+// derRenderer.done(function(template) {
+// 		var result = template({ weather: "rain", locale: "Spain" });
 //		... do something with the rendered markup.
 // });
 
@@ -85,9 +85,9 @@ function TemplateEngine() {
 	// with a data object to instantiate the template.
 	// The specifier can be the id of a script tag containing the template, or a url
 	// to fetch the template from, or the template text itself.
-	this.renderer = function(spec) {
+	this.template = function(spec) {
 		var def = $.Deferred();
-		var renderer;
+		var template;
 
 		// Template already cached?
 		if (cache[spec]) {
@@ -100,9 +100,9 @@ function TemplateEngine() {
 			var $specNode = $("#" + spec);
 			if ($specNode.length === 0)
 				throw('Template not found: "' + spec + '". Use the id of a script block (of type "text/html") or a url to an external HTML file containing the template.');
-			renderer = compile($specNode.html());
-			cache[spec] = renderer;
-			def.resolve(renderer);
+			template = compile($specNode.html());
+			cache[spec] = template;
+			def.resolve(template);
 			return def;			
 		}
 
@@ -110,9 +110,9 @@ function TemplateEngine() {
 		if (urlexpr.test(spec)) {
 			var req = $.ajax(spec, { dataType: "html"});
 			var compiled = req.then(function(text) {
-				renderer = compile(text);
-				cache[spec] = renderer;
-				return renderer;
+				template = compile(text);
+				cache[spec] = template;
+				return template;
 			});
 
 			req.fail(function (jqXHR, textStatus, errorThrown ) {
@@ -126,8 +126,8 @@ function TemplateEngine() {
 		}
 
 		// Otherwise, spec is raw template text. Compile into a renderer, but don't cache.
-		renderer = compile(spec);
-		return def.resolve(renderer);
+		template = compile(spec);
+		return def.resolve(template);
 	};
 
 }
