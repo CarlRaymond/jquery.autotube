@@ -207,7 +207,8 @@ QUnit.test("getMetadata adds custom data", function(assert) {
 QUnit.test("Poster renders posters", function(assert) {
 	var options = {
 		apikey: ytDataApiKey,
-		templatespec: 'video-poster'
+		templatespec: 'video-poster',
+		placer: 'replaceLink'
 	};
 
 	var $set = $("#posters a:youtube");
@@ -215,7 +216,7 @@ QUnit.test("Poster renders posters", function(assert) {
 	assert.expect($set.length);
 
 	var callback = function(elem, data) {
-		$(this).parent().append(elem);
+		//$(this).parent().append(elem);
 		assert.ok(true);
 		done();
 	};

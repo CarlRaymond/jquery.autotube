@@ -107,6 +107,21 @@
 
 	};
 
+	// A dictionary of simple poster placer functions
+	var placers = {
+		appendToParent: function(elem) {
+			$(this).parent().append(elem);
+		},
+
+		appendToLink: function(elem) {
+			$(this).append(elem);
+		},
+
+		replaceLink: function(elem) {
+			$(this).replaceWith(elem);
+		}
+	};
+
 
 	// Gets the metadata for one or more videos. Each link has its metadata
 	// stored in the data collection under the "youtube" property, including
@@ -193,7 +208,16 @@
 				var data = $(this).data(settings.datakey);
 				var html = template(data);
 				var elem = $(html);
-				callback.call(this, elem, data);
+
+				if (settings.placer && placers[settings.placer]) {
+					// Invoke the named placer
+					placers[settings.placer].call(this, elem, data);
+				}
+
+				// Invoke the callback, if any
+				if (callback) {
+					callback.call(this, elem, data);
+				}
 			});
 		});
 	};
