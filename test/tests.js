@@ -207,13 +207,13 @@ QUnit.test("getMetadata adds custom data", function(assert) {
 QUnit.test("Poster renders posters", function(assert) {
 
 	var handler = function(event) {
-		alert('Whazzup, ' + event.data.autotube.videoId);
+		alert('Whazzup, ' + event.data.id);
 		return false;
 	};
 
 	var options = {
 		apikey: ytDataApiKey,
-		templatespec: 'video-poster',
+		templatespec: 'video-template',
 		placer: 'appendToParent',
 		onclick: 'replacePoster',
 		posterSelector: ".video-poster"

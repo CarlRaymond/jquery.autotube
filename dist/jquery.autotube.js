@@ -447,7 +447,7 @@ function TemplateEngine() {
 		$.when(templateReady, metadataReady).done(function(template, metadata) {
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
-				var id = "autotube-poster-" + data.videoId;
+				var id = "autotube-poster-" + videoId(this);
 				data._posterId = id;
 				var $poster = $("<div id ='" + id + "'>").html(template(data));
 
@@ -478,8 +478,7 @@ function TemplateEngine() {
 
 					var boundHandler = handler.bind($poster[0]);
 
-					// Attach handler to body element, filtered by newly created poster
-					$poster.on("click", data, boundHandler);
+					$(document).on("click", "#" + id, data, boundHandler);
 				}
 
 				// Invoke the callback, if any
@@ -509,18 +508,25 @@ function TemplateEngine() {
 
 	/// Click handlers to play the video
 	
+
+
 	// Load the player over the poster
 	var replacePoster = function(event) {
+		var self = this;
 		var apiReady = apiLoader.load();
+
 		apiReady.done(function() {
 			var args = {
-
+				videoId: event.data.id,
+				height: 360,
+				width:640
 			};
-			var destination = $(this).find(event.data.settings.posterSelector)[0];
-			var player = new YT.Player(destination, {
-				videoId: event.data.autotube.videoId
-			});
+			var destination = $(self).find(event.data._settings.posterSelector)[0];
+			var player = new YT.Player(destination, args);
+
 		});
+
+		return false;
 	};
 
 	// A dictionary of simple click handlers
