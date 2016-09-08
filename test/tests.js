@@ -197,32 +197,37 @@ QUnit.test("getMetadata adds custom data", function(assert) {
 	var done = assert.async();
 
 	var options = { apikey: ytDataApiKey };
-	$set.getMetadata(options, function(vdata) {
-		assert.equal(vdata.autotube.duration, "1:54");
+	$set.getMetadata(options, function(metadata) {
+		assert.equal(metadata._playingTime, "1:54");
 		done();
 	});
 });
 
 
 QUnit.test("Poster renders posters", function(assert) {
+
+	var handler = function(event) {
+		alert('Whazzup, ' + event.data.autotube.videoId);
+		return false;
+	};
+
 	var options = {
 		apikey: ytDataApiKey,
 		templatespec: 'video-poster',
-		placer: 'replaceLink'
+		placer: 'appendToParent',
+		onclick: 'replacePoster',
+		posterSelector: ".video-poster"
 	};
 
 	var $set = $("#posters a:youtube");
 	var done = assert.async($set.length);
-	assert.expect($set.length);
+	assert.expect(0);
 
 	var callback = function(elem, data) {
-		//$(this).parent().append(elem);
-		assert.ok(true);
 		done();
 	};
 
 	$set.poster(options, callback);
-
 });
 
 

@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-09-03
+/*! jquery.autotube - v1.0.0 - 2016-09-07
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -282,12 +282,14 @@ function TemplateEngine() {
 
 	var defaults = {
 		part: 'snippet,contentDetails',
-		datakey : 'youtube'
+		datakey : 'autotube'
 	};
 
 
 
 	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
+
+	var videoIdAttr = 'videoId';
 
 	// RegExps for YouTube link forms
 	var youtubeStandardExpr = /^https?:\/\/(www\.)?youtube.com\/watch\?v=([^?&]+)/i; // Group 2 is video ID
@@ -296,33 +298,32 @@ function TemplateEngine() {
 	var youtubeEmbedExpr = /^https?:\/\/(www\.)?youtube.com\/embed\/([^\/]+)/i; // Group 2 is video ID
 
 	// Custom selector for YouTube URLs. Usage: $("#somediv a:youtube")...
-	// Also attaches the video ID to the link in the data-video-id attribute
+	// Also attaches the video ID to the link in the videoId data property
 	$.expr[':'].youtube = function (obj) {
 		var url = obj.href;
 		if (!url) return false;
 
-		var attr = 'videoId';
 		var match = url.match(youtubeStandardExpr);
 		if (match != null) {
-			$(obj).data(attr, match[2]);
+			$(obj).data(videoIdAttr, match[2]);
 			return true;
 		}
 
 		match = url.match(youtubeAlternateExpr);
 		if (match != null) {
-			$(obj).data(attr, match[2]);
+			$(obj).data(videoIdAttr, match[2]);
 			return true;
 		}
 
 		match = url.match(youtubeShortExpr);
 		if (match != null) {
-			$(obj).data(attr, match[1]);
+			$(obj).data(videoIdAttr, match[1]);
 			return true;
 		}
 
 		match = url.match(youtubeEmbedExpr);
 		if (match != null) {
-			$(obj).data(attr, match[2]);
+			$(obj).data(videoIdAttr, match[2]);
 			return true;
 		}
 
@@ -332,56 +333,46 @@ function TemplateEngine() {
 	// Template parsing engine
 	var templateEngine = new TemplateEngine();
 
+	// API loader
+	var apiLoader = new YoutubeApiLoader();
 
-
-	// Default placer to position callout in the document
-	var defaultCalloutCallback = function (info, $link, $callout) {
-		// Place callout at end of link's parent
-		$link.parent().append($callout);
-	};
-
-	// Default placer to position the player in the document
-	var defaultPlayerCallback = function ($player) {
-		// Place player at end of body
-		$('body').append($player);
-	};
-
-	// Extract the YouTube video ID from a link
+	// Extract the YouTube video ID from a link. Cached in element data.
 	var videoId = function (link) {
-		var match = link.href.match(youtubeStandardExpr);
-		if (match != null)
-			return match[2];
-		match = link.href.match(youtubeAlternateExpr);
-		if (match != null)
-			return match[2];
-		match = link.href.match(youtubeShortExpr);
-		if (match != null)
-			return match[1];
-		match = link.href.match(youtubeEmbedExpr);
-		if (match != null)
-			return match[2];
 
-	};
-
-	// A dictionary of simple poster placer functions
-	var placers = {
-		appendToParent: function(elem) {
-			$(this).parent().append(elem);
-		},
-
-		appendToLink: function(elem) {
-			$(this).append(elem);
-		},
-
-		replaceLink: function(elem) {
-			$(this).replaceWith(elem);
+		// Cached in data?
+		var id = $(link).data(videoIdAttr);
+		if (id == null) {
+			var match = link.href.match(youtubeStandardExpr);
+			if (match != null)
+				id = match[2];
+			else {
+				match = link.href.match(youtubeAlternateExpr);
+				if (match != null)
+					id = match[2];
+				else {
+					match = link.href.match(youtubeShortExpr);
+					if (match != null)
+						id = match[1];
+					else {
+						match = link.href.match(youtubeEmbedExpr);
+						if (match != null)
+						id = match[2];
+					}
+				}
+			}
 		}
-	};
 
+		// Cache for next time
+		if (id != null) {
+			$(link).data(videoIdAttr, id);
+		}
+
+		return id;
+	};
 
 	// Gets the metadata for one or more videos. Each link has its metadata
-	// stored in the data collection under the "youtube" property, including
-	// extra data in the "autotube" property.
+	// stored in the data collection under the "autotube" property, including
+	// some extra properties computed from the metadata.
 	// Returns a deferred that will resolve when the GET request from Youtube
 	// completes.
 	var _fetchMetadata = function($set, settings) {
@@ -389,14 +380,7 @@ function TemplateEngine() {
 		// Combine all video IDs into a comma-separated list
 		var ids = [];
 		$set.each(function(index) {
-			// Get id from data`
-			var id = $(this).data('videoId');
-			if (!id) {
-				// Not present. Extract and save.
-				id = videoId(this);
-				$(this).data('videoId', id);
-			}
-			ids.push(id);
+			ids.push(videoId(this));
 		});
 
 		var params = {
@@ -410,15 +394,16 @@ function TemplateEngine() {
 
 		def.done(function(data) {
 			$set.each(function(index) {
-				var vdata = data.items[index];
+				var itemdata = data.items[index];
 
-				// Add autotube property with some digested data
-				var d = new Iso8601(vdata.contentDetails.duration);
-				vdata.autotube = {
-					duration: d.toDisplay()
+				// Add properties with some digested data
+				var d = new Iso8601(itemdata.contentDetails.duration);
+				var extraData = {
+					_settings: settings,
+					_playingTime: d.toDisplay()
 				};
-
-				$(this).data(settings.datakey, vdata);
+				$.extend(itemdata, extraData);
+				$(this).data(settings.datakey, itemdata);
 			});
 		});
 
@@ -446,7 +431,7 @@ function TemplateEngine() {
 	};
 
 
-	// Get metadata for the links, compile the template, then instantiate the template for each,
+	// Get metadata for the links, compile the poster template, then instantiate the template for each,
 	// and invoke the callback.
 	var poster = function(options, callback) {
 		var $set = this;
@@ -462,64 +447,85 @@ function TemplateEngine() {
 		$.when(templateReady, metadataReady).done(function(template, metadata) {
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
-				var html = template(data);
-				var elem = $(html);
+				var id = "autotube-poster-" + data.videoId;
+				data._posterId = id;
+				var $poster = $("<div id ='" + id + "'>").html(template(data));
 
-				if (settings.placer && placers[settings.placer]) {
-					// Invoke the named placer
-					placers[settings.placer].call(this, elem, data);
+				if (settings.placer) {
+					if (placers[settings.placer]) {
+						// invoke the named placer
+						placers[settings.placer].call(this, $poster, data);
+					}
+					else {
+						throw 'Placer "' + settings.placer + '" is not valid.';
+ 					}
+				}
+
+				// Bind a click handler?
+				if (settings.onclick) {
+					var handler = null;
+					if (typeof(settings.onclick) === 'string') {
+						// Handler is name of built-in funciton
+						handler = clickHandlers[settings.onclick];
+						if (handler == null) {
+							throw 'Click handler "' + settings.onclick + '" is not valid.';
+						}
+					}
+					else {
+						// Handler passed directly
+						handler = settings.onclick;
+					}
+
+					var boundHandler = handler.bind($poster[0]);
+
+					// Attach handler to body element, filtered by newly created poster
+					$poster.on("click", data, boundHandler);
 				}
 
 				// Invoke the callback, if any
 				if (callback) {
-					callback.call(this, elem, data);
+					callback.call(this, $poster, data);
 				}
 			});
 		});
 	};
 
 
-	// Invoked when an opener link in the callout is clicked
-	var preparePlayer = function(event) {
+	// A dictionary of simple poster placer functions
+	var placers = {
+		appendToParent: function(elem) {
+			$(this).parent().append(elem);
+		},
 
-		var info = event.data;
-		var settings = info.settings;
+		appendToLink: function(elem) {
+			$(this).append(elem);
+		},
 
-		// Player already instantiated?
-		// TODO ...
-
-		var loader = new YoutubeApiLoader().load();
-
-		// Render the player
-		var defRenderer;
-		// User-supplied callout renderer?
-		if (info.playerRenderer) {
-			defRenderer = $.Deferred().resolve(info.settings.playerRenderer);
+		replaceLink: function(elem) {
+			$(this).replaceWith(elem);
 		}
-		else {
-			// Compile the callout template renderer
-			defRenderer = templates.renderer(info.settings.playerTemplate);
-		}
+	};
 
-		// When renderer, data and YouTube API are ready...
-		$.when(defRenderer, loader).then(function (render) {
-			var playerMarkup = render(info);
-			var $player = $(playerMarkup);
 
-			// Player markup not yet inserted into DOM, so an ordinary selector won't find it.
-			var elem = $player.find("#" + info.iframeId)[0];
+	/// Click handlers to play the video
+	
+	// Load the player over the poster
+	var replacePoster = function(event) {
+		var apiReady = apiLoader.load();
+		apiReady.done(function() {
+			var args = {
 
-			// Instantiate YouTube player
-			var ytplayer = new YT.Player(elem, {
-				height: settings.height,
-				width: settings.width,
-				videoId: info.videoId
+			};
+			var destination = $(this).find(event.data.settings.posterSelector)[0];
+			var player = new YT.Player(destination, {
+				videoId: event.data.autotube.videoId
 			});
-
-			// Invoke callback to place player
-			info.settings.playerCallback(info, $player, ytplayer); 
 		});
+	};
 
+	// A dictionary of simple click handlers
+	var clickHandlers = {
+		replacePoster: replacePoster
 	};
 
 
