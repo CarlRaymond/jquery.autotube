@@ -8,9 +8,6 @@
   <style type="text/css">
   .video-callout {
   	margin: 0 0 10px 0;
-  	padding: 10px;
-  	height: 204px;
-  	width: 240px;
   	background-color: #fff;
   	border: 1px solid gray;
   	box-shadow: 2px 2px 2px black;
@@ -19,13 +16,18 @@
 	clear: both;
   }
 
+  .video-player {
+	  width: 640px;
+	  height: 360px;
+	  border: 1px solid red;
+  }
+
   .video-poster {
   	background-repeat: no-repeat;
-  	background-size: 240px 180px;
-  	background-position: 0 -23px;
-  	min-height: 134px;
-  	margin-bottom: 10px;
-	padding: 10px;
+  	background-size: 640px 360px;
+  	background-position: 0 0;
+  	min-height: 360px;
+  	padding: 10px;
 	position: relative;
   }
 
@@ -130,13 +132,23 @@
 		</ul>
 	</div>
 
+	<div id="external-renderer">
+		<p>External Renderer</p>
+		<ul>
+			<li><a href="https://youtu.be/-21iYoe7cI4">Cat video</a></li>
+			<li><a href="https://youtu.be/nGeKSiCQkPw">Dog video</a></li>
+			<li><a href="https://youtu.be/MkQwJOLfr1k">Talking cat video</a></li>
+		</ul>
+	</div>
 
 	<!-- Template for video poster created from links -->
-	<script id="video-template" type="text/html">
-		<div class="video-callout">
-			<a href="#" role="button" data-toggle="modal" data-target="">
-				<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
-					<button type="button" class="video-poster-button"><strong>Play video</strong> {{=_playingTime}}</button>
+	<script id="callout-template" type="text/html">
+		<div id="{{=_posterId}}" class="video-callout">
+			<a href="#" role="button">
+				<div class="video-player">
+					<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
+						<button type="button" class="video-poster-button"><strong>Play video</strong> {{=_playingTime}}</button>
+					</div>
 				</div>
 			</a>
 			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>

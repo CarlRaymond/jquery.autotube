@@ -157,7 +157,7 @@
 	// Fetches video metadata for a set of links, and invokes a callback for each.
 	// The options object must include the apikey property, with the client's Youtube
 	// Data API key.
-	var getMetadata = function(options, callback) {
+	var videoMetadata = function(options, callback) {
 		var $set = this;
 
 		var settings = $.extend({}, defaults, options);
@@ -177,14 +177,22 @@
 
 	// Get metadata for the links, compile the poster template, then instantiate the template for each,
 	// and invoke the callback.
-	var poster = function(options, callback) {
+	var videoPoster = function(options, callback) {
 		var $set = this;
 
 		var settings = $.extend({}, defaults, options);
 
 		// Get template renderer
-		var templateReady = templateEngine.template(settings.templatespec);
-		
+		var templateReady;
+		// User-supplied template renderer?
+		if (typeof(settings.template) === 'function') {
+			templateReady = $.Deferred().resolve(settings.template);
+		}
+		else {
+			// Compile template with built-in template engine
+			templateReady = templateEngine.template(settings.template);
+		}
+
 		// Get the metadata
 		var metadataReady = _fetchMetadata($set, settings);
 
@@ -193,7 +201,7 @@
 				var data = $(this).data(settings.datakey);
 				var id = "autotube-poster-" + videoId(this);
 				data._posterId = id;
-				var $poster = $("<div id ='" + id + "'>").html(template(data));
+				var $poster = $(template(data));
 
 				if (settings.placer) {
 					if (placers[settings.placer]) {
@@ -279,24 +287,9 @@
 	};
 
 
-	// Plugin proper. Dispatches method calls using the usual jQuery pattern.
-	$.fn.autotube = function (method) {
-		// Method calling logic. If named method exists, execute it with passed arguments
-		if (methods[method]) {
-			return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
-		}
-			// If no argument, or an object passed, invoke init method.
-		else if (typeof method === 'object' || !method) {
-			return methods.init.apply(this, arguments);
-		}
-		else {
-			throw 'Method ' + method + ' does not exist on jQuery.autotube';
-		}
-	};
-
-
-	$.fn.getMetadata = getMetadata;
-	$.fn.poster = poster;
+	// Attach plugins to jQuery
+	$.fn.videoMetadata = videoMetadata;
+	$.fn.videoPoster = videoPoster;
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
