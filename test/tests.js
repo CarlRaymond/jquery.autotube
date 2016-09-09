@@ -175,7 +175,7 @@ QUnit.test("Template data object may contain subproperties", function(assert) {
 
 
 
-QUnit.test("getMetadata invokes callback", function(assert) {
+QUnit.test("videoMetadata invokes callback", function(assert) {
 
 	var $set = $("div#get-metadata a:youtube");
 	assert.ok($set.length > 1, "Set contains at least one element");
@@ -188,35 +188,30 @@ QUnit.test("getMetadata invokes callback", function(assert) {
 	};
 
 	var options = { apikey: ytDataApiKey };
-	$set.getMetadata(options, callback);
+	$set.videoMetadata(options, callback);
 });
 
 
-QUnit.test("getMetadata adds custom data", function(assert) {
+QUnit.test("videoMetadata adds custom data", function(assert) {
 	var $set = $("#qunit-fixture .standard li:nth-child(1) a:youtube");
 	var done = assert.async();
 
 	var options = { apikey: ytDataApiKey };
-	$set.getMetadata(options, function(metadata) {
+	$set.videoMetadata(options, function(metadata) {
 		assert.equal(metadata._playingTime, "1:54");
 		done();
 	});
 });
 
 
-QUnit.test("Poster renders posters", function(assert) {
-
-	var handler = function(event) {
-		alert('Whazzup, ' + event.data.id);
-		return false;
-	};
+QUnit.test("videoPoster renders posters", function(assert) {
 
 	var options = {
 		apikey: ytDataApiKey,
-		templatespec: 'video-template',
+		template: 'callout-template',
 		placer: 'appendToParent',
 		onclick: 'replacePoster',
-		posterSelector: ".video-poster"
+		posterSelector: ".video-player"
 	};
 
 	var $set = $("#posters a:youtube");
@@ -227,7 +222,27 @@ QUnit.test("Poster renders posters", function(assert) {
 		done();
 	};
 
-	$set.poster(options, callback);
+	$set.videoPoster(options, callback);
+});
+
+QUnit.test("videoPoster invokes supplied renderer", function(assert) {
+	var renderer = function(data) {
+		assert.ok(data.snippet.title != null);
+		done();
+		return "<p>Title: <strong>" + data.snippet.title + "</strong></p>";
+	};
+
+	var options = {
+		apikey: ytDataApiKey,
+		template: renderer,
+		placer: 'replaceLink'
+	};
+
+	var $set = $("#external-renderer a:youtube");
+	var done = assert.async($set.length);
+	assert.expect($set.length);
+	
+	$set.videoPoster(options);
 });
 
 
