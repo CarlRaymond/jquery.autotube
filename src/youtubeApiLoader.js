@@ -3,7 +3,12 @@
 // promise that will resolve when the API is loaded.
 // The load method can be called multiple times, even across multiple
 // instances, but the API will only be loaded once.
-
+//
+// Example:
+// var youtubeReady = new YoutubeApiLoader().load();
+// $.when(youtubeReady, function(YT) {
+//		var player new YT.Player(...);
+// });
 function YoutubeApiLoader() {
 
 	// Invoke to load YouTube API. Returns a promise the caller can wait on.
@@ -34,5 +39,6 @@ YoutubeApiLoader.apiRequested = false;
 
 // When YouTube api is ready, it invokes this handler.
 window.onYouTubeIframeAPIReady = function() {
-	YoutubeApiLoader.apiLoaded.resolve();
+	// YT is the global defined by the Youtube player
+	YoutubeApiLoader.apiLoaded.resolve(YT);
 };

@@ -267,7 +267,7 @@
 		var self = this;
 		var apiReady = apiLoader.load();
 
-		apiReady.done(function() {
+		apiReady.done(function(YT) {
 			var args = {
 				videoId: event.data.id,
 				height: 360,

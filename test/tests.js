@@ -225,6 +225,7 @@ QUnit.test("videoPoster renders posters", function(assert) {
 	$set.videoPoster(options, callback);
 });
 
+
 QUnit.test("videoPoster invokes supplied renderer", function(assert) {
 	var renderer = function(data) {
 		assert.ok(data.snippet.title != null);
@@ -269,26 +270,11 @@ QUnit.test("Iso8601 display", function(assert) {
 });
 
 
-QUnit.test("Iso8601.toDispalay", function(assert) {
-	var d1 = new Iso8601('PT4S');
-	assert.equal(d1.toDisplay(), '0:04', 'PT4S');
-
-	var d2 = new Iso8601('PT1M8S');
-	assert.equal(d2.toDisplay(), '1:08', 'PT1M8S');
-
-	var d3 = new Iso8601('PT1H6M9S');
-	assert.equal(d3.toDisplay(), '1:06:09', 'PT1H6M9S');
-
-	var d4 = new Iso8601('PT1M24S');
-	assert.equal(d4.toDisplay(), '1:24', 'PT1M24S');
-});
-
-
 QUnit.test("YoutubeApiLoader loads API", function(assert) {
 	var loader = new YoutubeApiLoader();
 	var done = assert.async();
 
-	var p = loader.load().done(function() {
+	var p = loader.load().done(function(YT) {
 		assert.equal(typeof(YT.Player), "function");
 		done();
 	});
@@ -300,14 +286,14 @@ QUnit.test("YoutubeApiLoader multiple promises resolve", function(assert) {
 	var done = assert.async(2);
 
 	var p1 = loader.load();
-	p1.done(function() {
-		assert.ok(true, "p1 done");
+	p1.done(function(YT) {
+		assert.equal(typeof(YT.Player), "function");
 		done();
 	});
 
 	var p2 = loader.load();
-	p2.done(function() {
-		assert.ok(true, "p2 done");
+	p2.done(function(YT) {
+		assert.equal(typeof(YT.Player), "function");
 		done();
 	});
 

@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-09-08
+/*! jquery.autotube - v1.0.0 - 2016-09-10
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -86,7 +86,12 @@ Iso8601.prototype.toDisplay = function() {
 // promise that will resolve when the API is loaded.
 // The load method can be called multiple times, even across multiple
 // instances, but the API will only be loaded once.
-
+//
+// Example:
+// var youtubeReady = new YoutubeApiLoader().load();
+// $.when(youtubeReady, function(YT) {
+//		var player new YT.Player(...);
+// });
 function YoutubeApiLoader() {
 
 	// Invoke to load YouTube API. Returns a promise the caller can wait on.
@@ -117,7 +122,8 @@ YoutubeApiLoader.apiRequested = false;
 
 // When YouTube api is ready, it invokes this handler.
 window.onYouTubeIframeAPIReady = function() {
-	YoutubeApiLoader.apiLoaded.resolve();
+	// YT is the global defined by the Youtube player
+	YoutubeApiLoader.apiLoaded.resolve(YT);
 };
 
 // Very simple template engine adapted from John Resig's Secrets of the
@@ -523,7 +529,7 @@ function TemplateEngine() {
 		var self = this;
 		var apiReady = apiLoader.load();
 
-		apiReady.done(function() {
+		apiReady.done(function(YT) {
 			var args = {
 				videoId: event.data.id,
 				height: 360,
