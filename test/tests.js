@@ -187,7 +187,7 @@ QUnit.test("videoMetadata invokes callback", function(assert) {
 			done();
 	};
 
-	var options = { apikey: ytDataApiKey };
+	var options = { apikey: yourYoutubeDataApiKey };
 	$set.videoMetadata(options, callback);
 });
 
@@ -196,7 +196,7 @@ QUnit.test("videoMetadata adds custom data", function(assert) {
 	var $set = $("#qunit-fixture .standard li:nth-child(1) a:youtube");
 	var done = assert.async();
 
-	var options = { apikey: ytDataApiKey };
+	var options = { apikey: yourYoutubeDataApiKey };
 	$set.videoMetadata(options, function(metadata) {
 		assert.equal(metadata._playingTime, "1:54");
 		done();
@@ -207,7 +207,7 @@ QUnit.test("videoMetadata adds custom data", function(assert) {
 QUnit.test("videoPoster renders posters", function(assert) {
 
 	var options = {
-		apikey: ytDataApiKey,
+		apikey: yourYoutubeDataApiKey,
 		template: 'callout-template',
 		placer: 'appendToParent',
 		onclick: 'replacePoster',
@@ -234,7 +234,7 @@ QUnit.test("videoPoster invokes supplied renderer", function(assert) {
 	};
 
 	var options = {
-		apikey: ytDataApiKey,
+		apikey: yourYoutubeDataApiKey,
 		template: renderer,
 		placer: 'replaceLink'
 	};

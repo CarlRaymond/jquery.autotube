@@ -2,16 +2,16 @@
 <html>
 	<head>
 		<title>Single Player</title>
+		<link rel="stylesheet" href="demo.css"/>
 		<script src="//code.jquery.com/qunit/qunit-2.0.1.js"></script>
 		<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-		<script src="../dist/jquery.autotube.js"></script>
-		<script src="../apikey.js"></script>
-		<script src="tests.js"></script>
+		<script src="../../dist/jquery.autotube.js"></script>
+		<script src="../../apikey.js"></script>
 	</head>
 
 	<body>
 <h1>Single Player Demo</h1>
-<p>Here are some videos</p>
+<p>Here are some videos. Click each to play in the player.</p>
 		<ul>
 			<li><a href="https://youtu.be/-21iYoe7cI4">Cat video</a></li>
 			<li><a href="https://youtu.be/nGeKSiCQkPw">Dog video</a></li>
@@ -19,5 +19,35 @@
 		</ul>
 
 
+	<div id="player" class="video-player">
+		
+	</div>
+
+
+	<!-- Template for video poster -->
+	<script id="callout-template" type="text/html">
+		<div id="{{=_posterId}}" class="video-callout">
+			<a href="#" role="button">
+				<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
+					<button type="button" class="video-poster-button"><strong>Play video</strong> {{=_playingTime}}</button>
+				</div>
+			</a>
+			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>
+		</div>
+	</script>
+
+	<script type="text/javascript">
+	var onclick = function(event) {
+		alert("Clicked!");
+	};
+
+	$("a:youtube").videoPoster({
+		apikey: yourYoutubeDataApiKey,
+		template: 'callout-template',
+		placer: 'appendToParent',
+		onclick: onclick,
+		posterSelector: ".video-poster"
+	});
+	</script>
 	</body>
 </html>

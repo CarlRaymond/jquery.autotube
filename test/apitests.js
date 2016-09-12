@@ -1,5 +1,5 @@
 // Tests interation with YouTube data API
-// The YouTube video data API key, ytDataApiKey, is defined outside this file. You must get your own.
+// The YouTube video data API key, yourYoutubeDataApiKey, is defined outside this file. You must get your own.
  
 var ytVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
 
@@ -7,7 +7,7 @@ var ytVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
 QUnit.test("jsonResult", function(assert) {
 	var params = {
 		id: 'tLt5rBfNucc',
-		key: ytDataApiKey,
+		key: yourYoutubeDataApiKey,
 		part: 'snippet,contentDetails'
 		};
 	

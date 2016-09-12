@@ -55,7 +55,7 @@ module.exports = function(grunt) {
     		options: {
     			port: 9001,
     			keepalive: true,
- 	       	open: 'http://localhost:9001/demo/demo.html'
+ 	       	open: 'http://localhost:9001/demo/single-player/index.html'
     		}
     	},
 
@@ -88,11 +88,12 @@ module.exports = function(grunt) {
     	options: {
     		sourceMap: true,
     	},
-    	dist: {
-    		files: {
-    			"demo.css": "demo.less"
-    		}
-    	}
+
+      'demo': {
+        files: {
+          "demo/single-player/demo.css": "demo/single-player/demo.less"
+        }
+      }
     },
 
     demo: {

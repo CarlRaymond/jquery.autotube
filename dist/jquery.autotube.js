@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-09-10
+/*! jquery.autotube - v1.0.0 - 2016-09-12
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
