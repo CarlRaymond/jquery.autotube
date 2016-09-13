@@ -39,6 +39,13 @@
 	<script type="text/javascript">
 	var onclick = function(event) {
 		alert("Clicked!");
+		event.stopPropagation();
+	};
+
+	var callback = function() {
+		$(this).on("click", function() {
+			return false;
+		});
 	};
 
 	$("a:youtube").videoPoster({
@@ -47,7 +54,7 @@
 		placer: 'appendToParent',
 		onclick: onclick,
 		posterSelector: ".video-poster"
-	});
+	}, callback);
 	</script>
 	</body>
 </html>

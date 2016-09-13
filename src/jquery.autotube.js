@@ -182,6 +182,25 @@
 
 		var settings = $.extend({}, defaults, options);
 
+		// Configure click handler
+		if (typeof(settings.onclick) === 'string') {
+			// Handler is name of built-in funciton
+			var handler = clickHandlers[settings.onclick];
+			if (handler == null) {
+				throw 'Click handler "' + settings.onclick + '" is not valid.';
+			}
+			settings.onclick = handler;
+		}
+
+		// Configure placer
+		if (typeof(settings.placer) === 'string') {
+			var placer = placers[settings.placer];
+			if (placer == null) {
+				throw 'Poster placer "' + settings.placer +'" is not valid.';
+			}
+			settings.placer = placer;
+		}
+
 		// Get template renderer
 		var templateReady;
 		// User-supplied template renderer?
@@ -203,33 +222,14 @@
 				data._posterId = id;
 				var $poster = $(template(data));
 
+				// Invoke the poster placer
 				if (settings.placer) {
-					if (placers[settings.placer]) {
-						// invoke the named placer
-						placers[settings.placer].call(this, $poster, data);
-					}
-					else {
-						throw 'Placer "' + settings.placer + '" is not valid.';
- 					}
+					settings.placer.call(this, $poster, data);
 				}
 
 				// Bind a click handler?
 				if (settings.onclick) {
-					var handler = null;
-					if (typeof(settings.onclick) === 'string') {
-						// Handler is name of built-in funciton
-						handler = clickHandlers[settings.onclick];
-						if (handler == null) {
-							throw 'Click handler "' + settings.onclick + '" is not valid.';
-						}
-					}
-					else {
-						// Handler passed directly
-						handler = settings.onclick;
-					}
-
-					var boundHandler = handler.bind($poster[0]);
-
+					var boundHandler = settings.onclick.bind($poster[0]);
 					$(document).on("click", "#" + id, data, boundHandler);
 				}
 
