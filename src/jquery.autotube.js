@@ -184,7 +184,7 @@
 
 		// Configure click handler
 		if (typeof(settings.onclick) === 'string') {
-			// Handler is name of built-in funciton
+			// Handler is name of built-in function
 			var handler = clickHandlers[settings.onclick];
 			if (handler == null) {
 				throw 'Click handler "' + settings.onclick + '" is not valid.';
@@ -194,6 +194,7 @@
 
 		// Configure placer
 		if (typeof(settings.placer) === 'string') {
+			// Placer is name of built-in function
 			var placer = placers[settings.placer];
 			if (placer == null) {
 				throw 'Poster placer "' + settings.placer +'" is not valid.';

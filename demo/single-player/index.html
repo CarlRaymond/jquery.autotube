@@ -37,9 +37,8 @@
 	</script>
 
 	<script type="text/javascript">
-	var onclick = function(event) {
+	var click = function(event) {
 		alert("Clicked!");
-		event.stopPropagation();
 	};
 
 	var callback = function() {
@@ -52,9 +51,9 @@
 		apikey: yourYoutubeDataApiKey,
 		template: 'callout-template',
 		placer: 'appendToParent',
-		onclick: onclick,
+		onclick: click,
 		posterSelector: ".video-poster"
-	}, callback);
+	});
 	</script>
 	</body>
 </html>
