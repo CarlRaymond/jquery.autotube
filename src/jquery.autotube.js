@@ -7,7 +7,6 @@
 // The plugin is wrapped up in an IIFE. The argument factory is a function invoked
 // in one of three ways (depending on the environment) to register the plugin with jQuery.
 ; (function(factory) {
-	'use strict';
 
 	// Register as a module in a module environment, or as a plain jQuery
 	// plugin in a bare environment.
@@ -23,6 +22,7 @@
 		factory(jQuery);
 	}
 } (function($) {
+	'use strict';
 
 	var defaults = {
 		part: 'snippet,contentDetails',
@@ -134,7 +134,7 @@
 		};
 
 		// Get metadata for all videos in set
-		def = $.get(youtubeVideoApiUrl, params);
+		var def = $.get(youtubeVideoApiUrl, params);
 
 		def.done(function(data) {
 			$set.each(function(index) {

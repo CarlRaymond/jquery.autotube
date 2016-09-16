@@ -1,6 +1,7 @@
 .video-callout {
-  margin: 0 0 10px 0;
-  padding: 10px;
+  width: 160px;
+  margin: auto;
+  padding: 10px 10px 0 10px;
   background-color: #fff;
   border: 1px solid gray;
   box-shadow: 2px 2px 2px black;
@@ -8,22 +9,36 @@
   float: right;
   clear: both;
 }
-.video-player {
+.video-player-frame {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  top: 50%;
+  left: 50%;
+  padding: 12px;
+  margin: -195px 0 0 -320px;
+  border: 1px solid gray;
+  box-shadow: 2px 2px 2px black;
+  border-radius: 4px;
+  background-color: #fff;
+  visibility: hidden;
+  -webkit-transition: visibility 0.5s ease-in;
+  -moz-transition: visibility 0.5s ease-in;
+  -ms-transition: visibility 0.5s ease-in;
+  -o-transition: visibility 0.5s ease-in;
+}
+.video-player {
+  width: 640px;
+  height: 390px;
 }
 .video-poster {
   background-repeat: no-repeat;
   background-size: 160px 90px;
   background-position: 0 0;
   min-height: 90px;
-  padding: 10px;
   position: relative;
 }
 .video-poster-button {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
+  left: 0.5em;
+  bottom: 0.5em;
 }
 /*# sourceMappingURL=demo/single-player/demo.css.map */

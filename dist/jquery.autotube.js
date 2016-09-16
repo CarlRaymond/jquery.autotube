@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-09-13
+/*! jquery.autotube - v1.0.0 - 2016-09-16
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -180,12 +180,14 @@ window.onYouTubeIframeAPIReady = function() {
 
 function TemplateEngine() {
 
+	// This code cannot "use strict" because it relies on the with() keyword.
+	
 	// Matches HTML4 compliant id names. HTML5 is more lax,
 	// so lax that it can't be done with a reasonable RE.
 	// So this is fine.
 	var idexpr = /^[A-Za-z][A-Za-z0-9.:_-]*$/;
 
-	// Matches a "url", which is anything that starts with a slash
+	// Matches a "url", which is anything that starts with a slash. This needs to be bettered-up.
 	var urlexpr = /^\/.*/;
 
 	// Cache for loaded templates
@@ -269,7 +271,6 @@ function TemplateEngine() {
 // The plugin is wrapped up in an IIFE. The argument factory is a function invoked
 // in one of three ways (depending on the environment) to register the plugin with jQuery.
 ; (function(factory) {
-	'use strict';
 
 	// Register as a module in a module environment, or as a plain jQuery
 	// plugin in a bare environment.
@@ -285,6 +286,7 @@ function TemplateEngine() {
 		factory(jQuery);
 	}
 } (function($) {
+	'use strict';
 
 	var defaults = {
 		part: 'snippet,contentDetails',
@@ -396,7 +398,7 @@ function TemplateEngine() {
 		};
 
 		// Get metadata for all videos in set
-		def = $.get(youtubeVideoApiUrl, params);
+		var def = $.get(youtubeVideoApiUrl, params);
 
 		def.done(function(data) {
 			$set.each(function(index) {

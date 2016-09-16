@@ -3,6 +3,7 @@
 	<head>
 		<title>Single Player</title>
 		<link rel="stylesheet" href="demo.css"/>
+		<script src="https://use.fontawesome.com/fb5f062d85.js"></script>
 		<script src="//code.jquery.com/qunit/qunit-2.0.1.js"></script>
 		<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
 		<script src="../../dist/jquery.autotube.js"></script>
@@ -19,41 +20,71 @@
 		</ul>
 
 
-	<div id="player" class="video-player">
-		
+	<div id="player-frame" class="video-player-frame">
+		<div class="video-player-frame-controls"><a href="#"></div>
+		<div id="player" class="video-player">
+		</div>
 	</div>
 
 
 	<!-- Template for video poster -->
 	<script id="callout-template" type="text/html">
 		<div id="{{=_posterId}}" class="video-callout">
-			<a href="#" role="button">
 				<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
-					<button type="button" class="video-poster-button"><strong>Play video</strong> {{=_playingTime}}</button>
+					<button type="button" class="video-poster-button"><strong><i class="fa fa-play" aria-hidden="true"></i> Play video</strong> {{=_playingTime}}</button>
 				</div>
-			</a>
 			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>
 		</div>
 	</script>
 
 	<script type="text/javascript">
-	var click = function(event) {
-		alert("Clicked!");
-	};
+	(function() {
+		var player = null;
+		var apiLoader = new YoutubeApiLoader();
 
-	var callback = function() {
-		$(this).on("click", function() {
-			return false;
-		});
-	};
+		var open = function(event) {
+			var apiReady = apiLoader.load();
 
-	$("a:youtube").videoPoster({
-		apikey: yourYoutubeDataApiKey,
-		template: 'callout-template',
-		placer: 'appendToParent',
-		onclick: click,
-		posterSelector: ".video-poster"
-	});
+			var vid = event.data.id;
+			$("#player-frame").css({ visibility: 'visible' });
+			if (!player) {
+				apiReady.done(function(YT) {
+					player = new YT.Player('player', {
+						height: '390',
+						width: '640',
+						videoId: vid,
+						playerVars: {
+							autoplay: 1
+						}
+					});
+				})
+			}
+
+			player.loadVideoById(vid)
+		};
+
+		var close = function(event) {
+			if (player) {
+				player.pauseVideo();
+			}
+			$("#player-frame").css({ visibility: 'hidden' });
+		};
+
+		var callback = function() {
+			$(this).on("click", function(event) {
+				open(event);
+				return false;
+			});
+		};
+
+		$("a:youtube").videoPoster({
+			apikey: yourYoutubeDataApiKey,
+			template: 'callout-template',
+			placer: 'appendToParent',
+			onclick: open,
+			posterSelector: ".video-poster"
+		}, callback);
+	})();
 	</script>
 	</body>
 </html>

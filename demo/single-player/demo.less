@@ -1,18 +1,39 @@
+.transition (@transition) {
+	-webkit-transition: @transition;  
+	-moz-transition:    @transition;
+	-ms-transition:     @transition; 
+	-o-transition:      @transition;  
+}
   .video-callout {
-  	margin: 0 0 10px 0;
-  	padding: 10px;
+		width: 160px;
+  	margin: auto;
+  	padding: 10px 10px 0 10px;
   	background-color: #fff;
   	border: 1px solid gray;
   	box-shadow: 2px 2px 2px black;
   	border-radius: 4px;
   	float: right;
 	clear: both;
+
+  }
+
+  .video-player-frame {
+	  position: absolute;
+	  top: 50%;
+	  left: 50%;
+	  padding: 12px;
+		margin: -195px 0 0 -320px;
+		border: 1px solid gray;
+		box-shadow: 2px 2px 2px black;
+		border-radius: 4px;
+		background-color: #fff;
+		visibility: hidden;
+		.transition(visibility .5s ease-in);
   }
 
   .video-player {
-	  position: absolute;
-	  right: 0;
-	  bottom: 0;
+	  width: 640px;
+	  height: 390px;
   }
 
   .video-poster {
@@ -20,14 +41,13 @@
   	background-size: 160px 90px;
   	background-position: 0 0;
   	min-height: 90px;
-  	padding: 10px;
-	position: relative;
+		position: relative;
   }
 
   .video-poster-button {
 	  position: absolute;
-	  left: 10px;
-	  bottom: 10px;
+	  left: 0.5em;
+	  bottom: 0.5em;
   }
 
   .video-title {
