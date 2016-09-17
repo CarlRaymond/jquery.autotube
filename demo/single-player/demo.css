@@ -25,6 +25,9 @@
   -ms-transition: visibility 0.5s ease-in;
   -o-transition: visibility 0.5s ease-in;
 }
+.video-player-frame-controls {
+  float: right;
+}
 .video-player {
   width: 640px;
   height: 390px;
