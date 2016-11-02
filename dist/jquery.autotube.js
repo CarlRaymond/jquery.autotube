@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-11-01
+/*! jquery.autotube - v1.0.0 - 2016-11-02
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -502,9 +502,11 @@ function TemplateEngine() {
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
 
+				// Instantiate the template, and assign the outermost element's id
 				var id = uniquePosterId(videoId(this));
 				data._posterId = id;
 				var $poster = $(template(data));
+				$poster.attr('id', id);
 
 				// Invoke the poster placer
 				if (settings.placer) {

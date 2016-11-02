@@ -238,9 +238,11 @@
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
 
+				// Instantiate the template, and assign the outermost element's id
 				var id = uniquePosterId(videoId(this));
 				data._posterId = id;
 				var $poster = $(template(data));
+				$poster.attr('id', id);
 
 				// Invoke the poster placer
 				if (settings.placer) {

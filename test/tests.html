@@ -172,7 +172,7 @@
 
 	<!-- Template for video poster created from links -->
 	<script id="callout-template" type="text/html">
-		<div id="{{=_posterId}}" class="poster-container video-callout">
+		<div class="poster-container video-callout">
 			<a href="#" role="button">
 				<div class="video-player">
 					<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
@@ -186,7 +186,7 @@
 
 	<!-- Template for tiny posters that open YouTube -->
 	<script id="simple-poster-template" type="text/html">
-		<div id="{{=_posterId}}" class="poster-container simple-poster-container">
+		<div class="poster-container simple-poster-container">
 			<a href="{{=_canonicalUrl}}" target="_blank" role="button">
 				<div>
 					<div class="simple-poster" style="background-image: url({{=snippet.thumbnails.default.url}})">
