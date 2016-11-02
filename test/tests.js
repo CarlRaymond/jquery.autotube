@@ -4,6 +4,7 @@ QUnit.test("Selector: standard", function (assert) {
 	var $set = $("#qunit-fixture .standard a:youtube");
 	assert.equal($set.length, 6, "Found standard link(s)");
 
+	// Verify video ID is stored in the link's data
 	$set.each(function(link) {
 		assert.equal($(this).data('videoId'), videoId, "videoId correct");
 	});
@@ -14,6 +15,7 @@ QUnit.test("Selector: alternate", function (assert) {
 	var $set = $("#qunit-fixture .alternate a:youtube");
 	assert.equal($set.length, 6, "Found alternate link(s)");
 
+	// Verify video ID is stored in the link's data
 	$set.each(function(link) {
 		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
@@ -24,6 +26,7 @@ QUnit.test("Selector: short", function (assert) {
 	var $set = $("#qunit-fixture .short a:youtube");
 	assert.equal($set.length, 3, "Found short link(s)");
 
+	// Verify video ID is stored in the link's data
 	$set.each(function(link) {
 		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
@@ -34,6 +37,7 @@ QUnit.test("Selector: embed", function (assert) {
 	var $set = $("#qunit-fixture .embed a:youtube");
 	assert.equal($set.length, 6, "Found embed link(s)");
 
+	// Verify video ID is stored in the link's data
 	$set.each(function(link) {
 		assert.equal($(this).data('videoId'), videoId, "yt-video-id correct");
 	});
@@ -45,6 +49,16 @@ QUnit.test("videoId", function (assert) {
 	$links.each(function (index) {
 		var id = $.autotube.videoId(this);
 		assert.equal(id, "phVdqyThPgc", this.href);
+	});
+});
+
+
+QUnit.test("canonicalUrl", function(assert) {
+	var expectedUrl = "https://www.youtube.com/watch?v=phVdqyThPgc";
+	var $links = $(".standard a:youtube");
+	$links.each(function(index) {
+		var id = $.autotube.videoId(this);
+		assert.equal($.autotube.canonicalUrl(id), expectedUrl, "Canonical URL correct.");
 	});
 });
 
@@ -203,7 +217,6 @@ QUnit.test("videoMetadata adds custom data", function(assert) {
 	});
 });
 
-
 QUnit.test("videoPoster renders posters", function(assert) {
 
 	var options = {
@@ -215,6 +228,25 @@ QUnit.test("videoPoster renders posters", function(assert) {
 	};
 
 	var $set = $("#posters a:youtube");
+	var done = assert.async($set.length);
+	assert.expect(0);
+
+	var callback = function(elem, data) {
+		done();
+	};
+
+	$set.videoPoster(options, callback);
+});
+
+QUnit.test("Simple posters", function(assert) {
+
+	var options = {
+	apikey: yourYoutubeDataApiKey,
+	template: 'simple-poster-template',
+	placer: 'appendToLink'
+	};
+
+	var $set = $("#simple-posters a:youtube");
 	var done = assert.async($set.length);
 	assert.expect(0);
 

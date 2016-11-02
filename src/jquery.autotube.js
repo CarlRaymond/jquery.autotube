@@ -24,11 +24,6 @@
 } (function($) {
 	'use strict';
 
-	var defaults = {
-		part: 'snippet,contentDetails',
-		datakey : 'autotube'
-	};
-
 
 
 	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
@@ -80,6 +75,11 @@
 	// API loader
 	var apiLoader = new YoutubeApiLoader();
 
+	// Create a canonical YouTube URl from a video ID
+	var canonicalUrl = function(id) {
+		return "https://www.youtube.com/watch?v=" + id;
+	};
+
 	// Extract the YouTube video ID from a link. Cached in element data.
 	var videoId = function (link) {
 
@@ -114,6 +114,23 @@
 		return id;
 	};
 
+	var uniqueIdCounter = 0;
+
+	// Creates a unique ID for a poster of the form "autotube-poster-{videoId}-{index}".
+	var uniquePosterId = function(videoId) {
+
+		var id =  "autotube-poster-" + videoId + '-' + (uniqueIdCounter++);
+		return id;
+	};
+
+	// Default settings for the plugin.
+	var defaults = {
+		part: 'snippet,contentDetails',
+		datakey : 'autotube',
+		canonicalUrl: canonicalUrl
+	};
+
+
 	// Gets the metadata for one or more videos. Each link has its metadata
 	// stored in the data collection under the "autotube" property, including
 	// some extra properties computed from the metadata.
@@ -143,6 +160,7 @@
 				// Add properties with some digested data
 				var d = new Iso8601(itemdata.contentDetails.duration);
 				var extraData = {
+					_canonicalUrl: settings.canonicalUrl($(this).data(videoIdAttr)),
 					_settings: settings,
 					_playingTime: d.toDisplay()
 				};
@@ -219,7 +237,8 @@
 		$.when(templateReady, metadataReady).done(function(template, metadata) {
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
-				var id = "autotube-poster-" + videoId(this);
+
+				var id = uniquePosterId(videoId(this));
 				data._posterId = id;
 				var $poster = $(template(data));
 
@@ -294,6 +313,8 @@
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
-		videoId: videoId
+		videoId: videoId,
+		canonicalUrl: canonicalUrl,
+		uniquePosterId: uniquePosterId
 	};
 }));

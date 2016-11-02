@@ -1,4 +1,4 @@
-/*! jquery.autotube - v1.0.0 - 2016-09-16
+/*! jquery.autotube - v1.0.0 - 2016-11-01
 * https://github.com/CarlRaymond/jquery.autotube
 * Copyright (c) 2016 ; Licensed GPLv2 */
 // Parses time durations specified in ISO8601 format. 
@@ -288,11 +288,6 @@ function TemplateEngine() {
 } (function($) {
 	'use strict';
 
-	var defaults = {
-		part: 'snippet,contentDetails',
-		datakey : 'autotube'
-	};
-
 
 
 	var youtubeVideoApiUrl = "https://www.googleapis.com/youtube/v3/videos";
@@ -344,6 +339,11 @@ function TemplateEngine() {
 	// API loader
 	var apiLoader = new YoutubeApiLoader();
 
+	// Create a canonical YouTube URl from a video ID
+	var canonicalUrl = function(id) {
+		return "https://www.youtube.com/watch?v=" + id;
+	};
+
 	// Extract the YouTube video ID from a link. Cached in element data.
 	var videoId = function (link) {
 
@@ -378,6 +378,23 @@ function TemplateEngine() {
 		return id;
 	};
 
+	var uniqueIdCounter = 0;
+
+	// Creates a unique ID for a poster of the form "autotube-poster-{videoId}-{index}".
+	var uniquePosterId = function(videoId) {
+
+		var id =  "autotube-poster-" + videoId + '-' + (uniqueIdCounter++);
+		return id;
+	};
+
+	// Default settings for the plugin.
+	var defaults = {
+		part: 'snippet,contentDetails',
+		datakey : 'autotube',
+		canonicalUrl: canonicalUrl
+	};
+
+
 	// Gets the metadata for one or more videos. Each link has its metadata
 	// stored in the data collection under the "autotube" property, including
 	// some extra properties computed from the metadata.
@@ -407,6 +424,7 @@ function TemplateEngine() {
 				// Add properties with some digested data
 				var d = new Iso8601(itemdata.contentDetails.duration);
 				var extraData = {
+					_canonicalUrl: settings.canonicalUrl($(this).data(videoIdAttr)),
 					_settings: settings,
 					_playingTime: d.toDisplay()
 				};
@@ -483,7 +501,8 @@ function TemplateEngine() {
 		$.when(templateReady, metadataReady).done(function(template, metadata) {
 			$set.each(function() {
 				var data = $(this).data(settings.datakey);
-				var id = "autotube-poster-" + videoId(this);
+
+				var id = uniquePosterId(videoId(this));
 				data._posterId = id;
 				var $poster = $(template(data));
 
@@ -558,6 +577,8 @@ function TemplateEngine() {
 
 	// Attach internal fuctions to $.autotube for easier testing
 	$.autotube = {
-		videoId: videoId
+		videoId: videoId,
+		canonicalUrl: canonicalUrl,
+		uniquePosterId: uniquePosterId
 	};
 }));

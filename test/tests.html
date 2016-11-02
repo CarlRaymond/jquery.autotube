@@ -6,13 +6,18 @@
   <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.18.0.css">
 
   <style type="text/css">
-  .video-callout {
+
+  .poster-container {
   	margin: 0 0 10px 0;
   	padding: 10px;
   	background-color: #fff;
   	border: 1px solid gray;
   	box-shadow: 2px 2px 2px black;
   	border-radius: 4px;
+
+  }
+
+  .video-callout {
   	float: right;
 	clear: both;
   }
@@ -41,6 +46,20 @@
   .video-title {
   }
   
+
+  .simple-poster-container {
+	  width: 120px;
+  }
+
+  .simple-poster {
+	background-repeat: no-repeat;
+  	background-size: 120px 90px;
+  	background-position: 0 0;
+  	min-height: 90px;
+  	padding: 10px;
+	position: relative;
+	width: 120px;
+  }
   </style>
 </head>
 <body>
@@ -142,9 +161,18 @@
 		</ul>
 	</div>
 
+	<div id="simple-posters">
+		<p>Simple Posters</p>
+		<ul>
+			<li><a href="https://youtu.be/-21iYoe7cI4">Cat video</a></li>
+			<li><a href="https://youtu.be/nGeKSiCQkPw">Dog video</a></li>
+			<li><a href="https://youtu.be/MkQwJOLfr1k">Talking cat video</a></li>
+		</ul>
+	</div>
+
 	<!-- Template for video poster created from links -->
 	<script id="callout-template" type="text/html">
-		<div id="{{=_posterId}}" class="video-callout">
+		<div id="{{=_posterId}}" class="poster-container video-callout">
 			<a href="#" role="button">
 				<div class="video-player">
 					<div class="video-poster" style="background-image: url({{=snippet.thumbnails.medium.url}})">
@@ -155,6 +183,22 @@
 			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>
 		</div>
 	</script>
+
+	<!-- Template for tiny posters that open YouTube -->
+	<script id="simple-poster-template" type="text/html">
+		<div id="{{=_posterId}}" class="poster-container simple-poster-container">
+			<a href="{{=_canonicalUrl}}" target="_blank" role="button">
+				<div>
+					<div class="simple-poster" style="background-image: url({{=snippet.thumbnails.default.url}})">
+						<button type="button" class="video-poster-button"><strong>Play video</strong> {{=_playingTime}}</button>
+					</div>
+				</div>
+			</a>
+			<p class="video-title"><a href="#"><strong><em>{{=snippet.title}}</em></strong></a></p>
+			<p>Canonical URL: <a href="{{=_canonicalUrl}}" target="_blank">{{=_canonicalUrl}}</a></p>
+		</div>
+	</script>
+	
 
 
 	<!-- Template for built-in template parser -->
